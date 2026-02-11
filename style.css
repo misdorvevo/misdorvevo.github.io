@@ -479,6 +479,88 @@ body {
     display: none;
 }
 
+/* ============= START MENU ============= */
+.start-menu {
+    position: fixed;
+    bottom: 28px;
+    left: 0;
+    width: 400px;
+    background: linear-gradient(90deg, #000080, #1084d7);
+    border: 2px solid;
+    border-color: #dfdfdf #808080 #808080 #dfdfdf;
+    box-shadow: 1px 1px 0 0 #ffffff inset, -1px -1px 0 0 #000000 inset;
+    z-index: 99998;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.start-menu.active {
+    display: flex;
+}
+
+.start-menu-header {
+    background: linear-gradient(90deg, #000080, #1084d7);
+    color: #ffffff;
+    padding: 8px 12px;
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #ffffff;
+}
+
+.start-menu-logo {
+    font-family: 'Georgia', serif;
+    letter-spacing: 2px;
+}
+
+.start-menu-items {
+    background: #c0c0c0;
+    display: flex;
+    flex-direction: column;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.menu-item {
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    transition: none;
+}
+
+.menu-item:hover {
+    background: linear-gradient(90deg, #000080, #1084d7);
+    color: #ffffff;
+    border: 1px solid #ffffff;
+}
+
+.menu-item:active {
+    background: linear-gradient(90deg, #000080, #1084d7);
+    color: #ffffff;
+}
+
+.menu-icon {
+    font-size: 8px;
+    margin-left: auto;
+    order: 2;
+    display: none;
+}
+
+.menu-item:first-child .menu-icon,
+.menu-item:nth-child(2) .menu-icon {
+    display: inline;
+}
+
+.menu-separator {
+    height: 2px;
+    background: linear-gradient(90deg, #dfdfdf, #808080);
+    margin: 4px 0;
+}
+
 @media (max-width: 768px) {
     .desktop-icons {
         gap: 40px;
@@ -487,5 +569,10 @@ body {
     .window {
         max-width: 90vw;
         max-height: 80vh;
+    }
+    
+    .start-menu {
+        width: 300px;
+        bottom: 28px;
     }
 }
