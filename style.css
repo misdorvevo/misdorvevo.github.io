@@ -438,6 +438,106 @@ h2::before {
     color: var(--color-sage-green);
 }
 
+.purpose {
+    animation: slideInUp 0.8s ease-out 0.2s both;
+}
+
+.glitch-text {
+    position: relative;
+    z-index: 1;
+}
+
+.glitch-line {
+    font-size: 1.1rem;
+    line-height: 2.2;
+    color: var(--color-pale-slate);
+    background: linear-gradient(135deg, rgba(138, 170, 121, 0.08) 0%, rgba(131, 117, 105, 0.08) 100%);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1rem;
+    border-left: 5px solid var(--color-sage-green);
+    border-radius: 0;
+    position: relative;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    animation: glitch-shimmer 3s infinite;
+}
+
+.glitch-line:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.glitch-line:nth-child(2) {
+    animation-delay: 0.4s;
+}
+
+.glitch-line:nth-child(3) {
+    animation-delay: 0.8s;
+}
+
+.glitch-line:nth-child(4) {
+    animation-delay: 1.2s;
+}
+
+@keyframes glitch-shimmer {
+    0% {
+        transform: translateX(0) skewX(0deg);
+        opacity: 1;
+        text-shadow: 0 0 0 rgba(138, 170, 121, 0);
+    }
+    25% {
+        transform: translateX(3px) skewX(-1deg);
+        opacity: 0.98;
+        text-shadow: -2px 0 rgba(138, 170, 121, 0.3), 2px 0 rgba(131, 117, 105, 0.2);
+    }
+    50% {
+        transform: translateX(-2px) skewX(0.5deg);
+        opacity: 1;
+        text-shadow: 0 0 0 rgba(138, 170, 121, 0);
+    }
+    75% {
+        transform: translateX(2px) skewX(-0.5deg);
+        opacity: 0.99;
+        text-shadow: 2px 0 rgba(131, 117, 105, 0.2), -2px 0 rgba(138, 170, 121, 0.3);
+    }
+    100% {
+        transform: translateX(0) skewX(0deg);
+        opacity: 1;
+        text-shadow: 0 0 0 rgba(138, 170, 121, 0);
+    }
+}
+
+.glitch-line::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    z-index: -1;
+    animation: glitch-duplicate 2.5s infinite;
+}
+
+@keyframes glitch-duplicate {
+    0% {
+        clip-path: inset(0 0 0 0);
+        opacity: 0;
+        transform: translateX(-4px);
+    }
+    20% {
+        clip-path: inset(0 0 65% 0);
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 0;
+    }
+    100% {
+        clip-path: inset(0 0 0 0);
+        opacity: 0;
+        transform: translateX(0);
+    }
+}
+
 .link-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
