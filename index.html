@@ -740,100 +740,263 @@
             }
         }
 
+        // Pokemon Database
+        const POKEMON_DATA = {
+            'Bulbasaur': {hp: 45, att: 49, def: 49, spA: 65, spD: 65, spe: 45, type: 'Grass', moves: ['Tackle', 'Growl', 'Vine Whip']},
+            'Charmander': {hp: 39, att: 52, def: 43, spA: 60, spD: 50, spe: 65, type: 'Fire', moves: ['Scratch', 'Growl', 'Ember']},
+            'Squirtle': {hp: 44, att: 48, def: 65, spA: 50, spD: 64, spe: 43, type: 'Water', moves: ['Tackle', 'Tail Whip', 'Water Gun']},
+            'Charizard': {hp: 78, att: 84, def: 78, spA: 109, spD: 85, spe: 100, type: 'Fire', moves: ['Scratch', 'Ember', 'Flamethrower', 'Dragon Claw']},
+            'Blastoise': {hp: 79, att: 83, def: 100, spA: 85, spD: 105, spe: 78, type: 'Water', moves: ['Tackle', 'Water Gun', 'Hydro Pump', 'Ice Beam']},
+            'Venusaur': {hp: 80, att: 82, def: 83, spA: 100, spD: 100, spe: 80, type: 'Grass', moves: ['Vine Whip', 'Leech Seed', 'Solar Beam', 'Synthesis']},
+            'Pikachu': {hp: 35, att: 55, def: 40, spA: 50, spD: 50, spe: 90, type: 'Electric', moves: ['Thunderbolt', 'Quick Attack', 'Thunder Wave', 'Iron Tail']},
+            'Dragonite': {hp: 91, att: 134, def: 95, spA: 100, spD: 100, spe: 80, type: 'Dragon', moves: ['Dragon Claw', 'Earthquake', 'Outrage', 'Hurricane']},
+            'Gyarados': {hp: 95, att: 125, def: 79, spA: 60, spD: 100, spe: 81, type: 'Water', moves: ['Waterfall', 'Dragon Dance', 'Crunch', 'Stone Edge']},
+            'Arcanine': {hp: 90, att: 110, def: 80, spA: 80, spD: 90, spe: 100, type: 'Fire', moves: ['Extreme Speed', 'Flare Blitz', 'Wild Charge', 'Close Combat']},
+            'Lapras': {hp: 130, att: 85, def: 80, spA: 85, spD: 95, spe: 60, type: 'Water', moves: ['Surf', 'Ice Beam', 'Thunder', 'Psychic']},
+            'Snorlax': {hp: 150, att: 110, def: 65, spA: 65, spD: 110, spe: 30, type: 'Normal', moves: ['Body Slam', 'Crunch', 'Earthquake', 'Rest']}
+        };
+
+        const TYPE_CHART = {
+            'Fire': {strong: ['Grass', 'Ice', 'Bug', 'Steel'], weak: ['Water', 'Ground', 'Rock']},
+            'Water': {strong: ['Fire', 'Ground', 'Rock'], weak: ['Grass', 'Electric']},
+            'Grass': {strong: ['Water', 'Ground', 'Rock'], weak: ['Fire', 'Ice', 'Poison', 'Flying', 'Bug']},
+            'Electric': {strong: ['Water', 'Flying'], weak: ['Ground']},
+            'Dragon': {strong: ['Dragon'], weak: ['Ice', 'Dragon', 'Fairy']},
+            'Normal': {strong: [], weak: ['Fighting']},
+            'Ground': {strong: ['Fire', 'Electric', 'Poison', 'Rock', 'Steel'], weak: ['Water', 'Grass', 'Ice']},
+            'Flying': {strong: ['Grass', 'Fighting', 'Bug'], weak: ['Electric', 'Ice', 'Rock']},
+            'Poison': {strong: ['Grass'], weak: ['Ground', 'Psychic']},
+            'Ice': {strong: ['Grass', 'Flying', 'Ground', 'Dragon'], weak: ['Fire', 'Fighting', 'Rock', 'Steel']},
+            'Bug': {strong: ['Grass', 'Psychic', 'Dark'], weak: ['Fire', 'Flying', 'Rock']},
+            'Rock': {strong: ['Flying', 'Bug', 'Fire', 'Ice'], weak: ['Water', 'Grass', 'Fighting', 'Ground', 'Steel']},
+            'Steel': {strong: ['Ice', 'Rock', 'Fairy'], weak: ['Fire', 'Water', 'Ground']},
+            'Fighting': {strong: ['Normal', 'Ice', 'Rock', 'Dark', 'Steel'], weak: ['Flying', 'Psychic', 'Fairy']},
+            'Psychic': {strong: ['Fighting', 'Poison'], weak: ['Bug', 'Ghost', 'Dark']},
+            'Ghost': {strong: ['Psychic', 'Ghost'], weak: ['Ghost', 'Dark']},
+            'Dark': {strong: ['Psychic', 'Ghost'], weak: ['Fighting', 'Bug', 'Fairy']},
+            'Fairy': {strong: ['Fighting', 'Dragon', 'Dark'], weak: ['Poison', 'Steel']}
+        };
+
+        const MOVES = {
+            'Tackle': {power: 40, acc: 100, type: 'Normal'},
+            'Scratch': {power: 40, acc: 100, type: 'Normal'},
+            'Growl': {power: 0, acc: 100, type: 'Normal', effect: 'lower_att'},
+            'Ember': {power: 40, acc: 100, type: 'Fire'},
+            'Flamethrower': {power: 90, acc: 100, type: 'Fire'},
+            'Water Gun': {power: 40, acc: 100, type: 'Water'},
+            'Hydro Pump': {power: 110, acc: 80, type: 'Water'},
+            'Vine Whip': {power: 45, acc: 100, type: 'Grass'},
+            'Solar Beam': {power: 120, acc: 100, type: 'Grass'},
+            'Thunderbolt': {power: 90, acc: 100, type: 'Electric'},
+            'Thunder Wave': {power: 0, acc: 90, type: 'Electric', effect: 'paralyze'},
+            'Dragon Claw': {power: 80, acc: 100, type: 'Dragon'},
+            'Ice Beam': {power: 90, acc: 100, type: 'Ice'},
+            'Earthquake': {power: 100, acc: 100, type: 'Ground'},
+            'Psychic': {power: 90, acc: 100, type: 'Psychic'},
+            'Crunch': {power: 80, acc: 100, type: 'Dark'},
+            'Quick Attack': {power: 40, acc: 100, type: 'Normal', effect: 'priority'},
+            'Thunder': {power: 110, acc: 70, type: 'Electric'},
+            'Waterfall': {power: 80, acc: 100, type: 'Water'},
+            'Outrage': {power: 120, acc: 100, type: 'Dragon'}
+        };
+
         class PokemonGame {
             constructor(windowEl) {
                 this.windowEl = windowEl;
-                this.playerTeam = [
-                    {name: 'Charizard', hp: 78, maxHp: 78, level: 50, type: 'Fire'},
-                    {name: 'Blastoise', hp: 79, maxHp: 79, level: 50, type: 'Water'},
-                    {name: 'Venusaur', hp: 80, maxHp: 80, level: 50, type: 'Grass'}
-                ];
+                this.gameState = 'menu'; // menu, overworld, battle, pokedex, inventory
+                this.playerName = 'Red';
+                this.playerTeam = this.createStarterTeam();
+                this.pokedex = new Set(this.playerTeam.map(p => p.name));
+                this.inventory = {pokeballs: 10, potions: 5, fullHeals: 2, exp: 0};
                 this.currentPokemonIndex = 0;
-                this.enemyPokemon = {name: 'Dragonite', hp: 100, maxHp: 100, level: 50, type: 'Dragon'};
-                this.battleLog = ['Battle started!'];
+                this.mapPos = {x: 5, y: 5};
+                this.wildEncounterChance = 0.3;
+                this.battleEnemy = null;
+                this.battleLog = [];
                 this.setupHandlers();
+                this.loadGame();
                 this.render();
             }
 
+            createStarterTeam() {
+                return [
+                    this.createPokemon('Pikachu', 5),
+                    this.createPokemon('Squirtle', 5),
+                    this.createPokemon('Bulbasaur', 5)
+                ];
+            }
+
+            createPokemon(species, level) {
+                const data = POKEMON_DATA[species];
+                const baseStats = {name: species, level, exp: 0, ...data};
+                baseStats.hp = Math.floor((2 * data.hp * level) / 100) + level + 10;
+                baseStats.maxHp = baseStats.hp;
+                baseStats.att = Math.floor((2 * data.att * level) / 100) + 5;
+                baseStats.def = Math.floor((2 * data.def * level) / 100) + 5;
+                baseStats.spA = Math.floor((2 * data.spA * level) / 100) + 5;
+                baseStats.spD = Math.floor((2 * data.spD * level) / 100) + 5;
+                baseStats.spe = Math.floor((2 * data.spe * level) / 100) + 5;
+                return baseStats;
+            }
+
             setupHandlers() {
-                const buttons = this.windowEl.querySelectorAll('.pokemon-action-btn');
-                buttons.forEach(btn => {
-                    const action = btn.dataset.action;
-                    btn.addEventListener('click', () => {
-                        if (action === 'attack') this.useMove();
-                        else if (action === 'pokeball') this.throwPokeball();
-                        else if (action === 'potion') this.usePotion();
-                        else if (action === 'switch') this.switchPokemon();
-                        else if (action === 'run') this.run();
-                    });
+                document.addEventListener('keydown', (e) => {
+                    if (this.gameState === 'overworld') {
+                        if (e.key === 'ArrowUp') this.mapPos.y = Math.max(0, this.mapPos.y - 1);
+                        else if (e.key === 'ArrowDown') this.mapPos.y = Math.min(9, this.mapPos.y + 1);
+                        else if (e.key === 'ArrowLeft') this.mapPos.x = Math.max(0, this.mapPos.x - 1);
+                        else if (e.key === 'ArrowRight') this.mapPos.x = Math.min(9, this.mapPos.x + 1);
+                        if ([e.key].includes('Arrow')) this.checkWildEncounter();
+                    }
                 });
             }
 
-            useMove() {
-                const current = this.playerTeam[this.currentPokemonIndex];
-                const damage = Math.floor(Math.random() * 30) + 10;
-                this.enemyPokemon.hp = Math.max(0, this.enemyPokemon.hp - damage);
-                this.battleLog.push(`${current.name} used attack! Dealt ${damage} damage!`);
+            checkWildEncounter() {
+                if (Math.random() < this.wildEncounterChance) {
+                    const wildSpecies = Object.keys(POKEMON_DATA)[Math.floor(Math.random() * Object.keys(POKEMON_DATA).length)];
+                    const level = Math.floor(Math.random() * 5) + this.playerTeam[this.currentPokemonIndex].level - 2;
+                    this.battleEnemy = this.createPokemon(wildSpecies, Math.max(1, level));
+                    this.gameState = 'battle';
+                    this.battleLog = [`Wild ${this.battleEnemy.name} appeared!`];
+                }
+                this.render();
+            }
 
-                if (this.enemyPokemon.hp <= 0) {
-                    this.battleLog.push('Enemy Pokemon fainted! You won!');
+            startBattle(enemy) {
+                this.battleEnemy = enemy;
+                this.gameState = 'battle';
+                this.battleLog = [`A wild ${this.battleEnemy.name} appeared!`];
+                this.render();
+            }
+
+            calculateDamage(attacker, defender, move) {
+                const moveData = MOVES[move];
+                if (!moveData || moveData.power === 0) return 0;
+
+                let damage = Math.floor(((2 * attacker.level + 10) / 250) * (attacker.att / defender.def) * moveData.power + 2);
+                
+                // Type advantage
+                if (TYPE_CHART[moveData.type]?.strong.includes(defender.type)) {
+                    damage = Math.floor(damage * 1.5);
+                } else if (TYPE_CHART[moveData.type]?.weak.includes(defender.type)) {
+                    damage = Math.floor(damage * 0.5);
+                }
+
+                damage += Math.floor(Math.random() * 16); // STAB and variance
+                return Math.max(1, damage);
+            }
+
+            useAttack(moveIdx) {
+                const current = this.playerTeam[this.currentPokemonIndex];
+                const moveName = current.moves[moveIdx] || 'Tackle';
+                const damage = this.calculateDamage(current, this.battleEnemy, moveName);
+                
+                this.battleEnemy.hp = Math.max(0, this.battleEnemy.hp - damage);
+                this.battleLog.push(`${current.name} used ${moveName}! Dealt ${damage} damage!`);
+
+                if (this.battleEnemy.hp <= 0) {
+                    const expGain = Math.floor(this.battleEnemy.level * 10);
+                    current.exp += expGain;
+                    this.inventory.exp += expGain;
+                    this.battleLog.push(`${this.battleEnemy.name} fainted! Gained ${expGain} EXP!`);
+                    this.checkLevelUp(current);
+                    setTimeout(() => this.endBattle(true), 1000);
                     this.render();
                     return;
                 }
 
-                setTimeout(() => this.enemyCounterAttack(), 500);
+                setTimeout(() => this.enemyTurn(), 600);
             }
 
-            enemyCounterAttack() {
+            enemyTurn() {
                 const current = this.playerTeam[this.currentPokemonIndex];
-                const damage = Math.floor(Math.random() * 25) + 8;
+                const moveIdx = Math.floor(Math.random() * this.battleEnemy.moves.length);
+                const moveName = this.battleEnemy.moves[moveIdx];
+                const damage = this.calculateDamage(this.battleEnemy, current, moveName);
+
                 current.hp = Math.max(0, current.hp - damage);
-                this.battleLog.push(`${this.enemyPokemon.name} used attack! Dealt ${damage} damage!`);
+                this.battleLog.push(`${this.battleEnemy.name} used ${moveName}! Dealt ${damage} damage!`);
 
                 if (current.hp <= 0) {
                     this.battleLog.push(`${current.name} fainted!`);
                     if (this.getAlivePokemon().length === 0) {
                         this.battleLog.push('All Pokemon fainted! You lost!');
+                        setTimeout(() => this.endBattle(false), 1000);
+                    } else {
+                        this.gameState = 'battle_switch';
                     }
                 }
                 this.render();
             }
 
             throwPokeball() {
-                const catchChance = Math.random() < 0.4;
-                if (catchChance) {
-                    this.battleLog.push('Pokemon caught! Added to team!');
-                    this.playerTeam.push({
-                        name: 'Captured ' + this.enemyPokemon.name,
-                        hp: 50, maxHp: 50, level: 30, type: this.enemyPokemon.type
-                    });
+                if (this.inventory.pokeballs <= 0) {
+                    this.battleLog.push('No pokeballs left!');
+                    this.render();
+                    return;
+                }
+
+                this.inventory.pokeballs--;
+                const catchRate = 0.3 * (this.battleEnemy.maxHp / this.battleEnemy.hp);
+                
+                if (Math.random() < catchRate) {
+                    this.battleLog.push(`${this.battleEnemy.name} was caught!`);
+                    this.playerTeam.push(JSON.parse(JSON.stringify(this.battleEnemy)));
+                    this.pokedex.add(this.battleEnemy.name);
+                    setTimeout(() => this.endBattle(true), 1000);
                 } else {
                     this.battleLog.push('Pokemon broke free!');
+                    setTimeout(() => this.enemyTurn(), 600);
                 }
                 this.render();
             }
 
             usePotion() {
                 const current = this.playerTeam[this.currentPokemonIndex];
-                const healAmount = 30;
-                current.hp = Math.min(current.maxHp, current.hp + healAmount);
-                this.battleLog.push(`${current.name} healed by ${healAmount} HP!`);
-                this.render();
-            }
-
-            switchPokemon() {
-                this.currentPokemonIndex = (this.currentPokemonIndex + 1) % this.playerTeam.length;
-                this.battleLog.push(`Switched to ${this.playerTeam[this.currentPokemonIndex].name}!`);
-                this.render();
-            }
-
-            run() {
-                const escapeChance = Math.random() < 0.7;
-                if (escapeChance) {
-                    this.battleLog.push('Successfully escaped!');
-                } else {
-                    this.battleLog.push('Cannot escape!');
+                if (this.inventory.potions <= 0) {
+                    this.battleLog.push('No potions!');
+                    this.render();
+                    return;
                 }
+                this.inventory.potions--;
+                const heal = 30;
+                current.hp = Math.min(current.maxHp, current.hp + heal);
+                this.battleLog.push(`${current.name} healed ${heal} HP!`);
+                setTimeout(() => this.enemyTurn(), 600);
+                this.render();
+            }
+
+            switchPokemon(newIdx) {
+                if (this.playerTeam[newIdx].hp <= 0) {
+                    this.battleLog.push('That Pokemon has fainted!');
+                    this.render();
+                    return;
+                }
+                this.currentPokemonIndex = newIdx;
+                this.gameState = 'battle';
+                this.battleLog.push(`Go, ${this.playerTeam[newIdx].name}!`);
+                setTimeout(() => this.enemyTurn(), 600);
+                this.render();
+            }
+
+            checkLevelUp(pokemon) {
+                const expPerLevel = 100;
+                if (pokemon.exp >= expPerLevel) {
+                    pokemon.level++;
+                    pokemon.exp = 0;
+                    const newData = POKEMON_DATA[pokemon.name];
+                    pokemon.maxHp = Math.floor((2 * newData.hp * pokemon.level) / 100) + pokemon.level + 10;
+                    pokemon.hp = pokemon.maxHp;
+                    pokemon.att = Math.floor((2 * newData.att * pokemon.level) / 100) + 5;
+                    pokemon.def = Math.floor((2 * newData.def * pokemon.level) / 100) + 5;
+                    this.battleLog.push(`${pokemon.name} leveled up to Lv.${pokemon.level}!`);
+                }
+            }
+
+            endBattle(won) {
+                this.gameState = 'overworld';
+                this.battleEnemy = null;
+                this.saveGame();
                 this.render();
             }
 
@@ -841,55 +1004,114 @@
                 return this.playerTeam.filter(p => p.hp > 0);
             }
 
-            getHPBarWidth(current, max) {
-                return Math.max(0, (current / max) * 200);
+            saveGame() {
+                const save = {team: this.playerTeam, inventory: this.inventory, pokedex: Array.from(this.pokedex), mapPos: this.mapPos};
+                localStorage.setItem('pokemon_save', JSON.stringify(save));
+            }
+
+            loadGame() {
+                const save = JSON.parse(localStorage.getItem('pokemon_save') || 'null');
+                if (save) {
+                    this.playerTeam = save.team;
+                    this.inventory = save.inventory;
+                    this.pokedex = new Set(save.pokedex);
+                    this.mapPos = save.mapPos;
+                }
             }
 
             render() {
                 const gameArea = this.windowEl.querySelector('.pokemon-game-area');
                 if (!gameArea) return;
 
-                const current = this.playerTeam[this.currentPokemonIndex];
-                const playerHPBar = this.getHPBarWidth(current.hp, current.maxHp);
-                const enemyHPBar = this.getHPBarWidth(this.enemyPokemon.hp, this.enemyPokemon.maxHp);
+                if (this.gameState === 'menu') {
+                    gameArea.innerHTML = `<div style="padding: 20px; text-align: center; background: #000; color: #fff; height: 100%;">
+                        <h2>Pokemon Game</h2>
+                        <p>Press Start to Begin</p>
+                        <button onclick="window.pokemonGame.gameState='overworld'; window.pokemonGame.render();" style="padding: 10px 20px; margin: 10px;">Start Game</button>
+                        <button onclick="window.pokemonGame.gameState='pokedex'; window.pokemonGame.render();" style="padding: 10px 20px; margin: 10px;">Pokédex</button>
+                        <button onclick="window.pokemonGame.gameState='inventory'; window.pokemonGame.render();" style="padding: 10px 20px; margin: 10px;">Inventory</button>
+                    </div>`;
+                } else if (this.gameState === 'pokedex') {
+                    gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; height: 100%; overflow-y: auto; font-size: 11px;">
+                        <button onclick="window.pokemonGame.gameState='menu'; window.pokemonGame.render();">Back</button>
+                        <h3>Pokédex (${this.pokedex.size} seen)</h3>
+                        ${Array.from(this.pokedex).map(name => {
+                            const data = POKEMON_DATA[name];
+                            return `<div style="padding: 5px; border-bottom: 1px solid #333;"><strong>${name}</strong> - ${data.type} Type</div>`;
+                        }).join('')}
+                    </div>`;
+                } else if (this.gameState === 'inventory') {
+                    gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; height: 100%; overflow-y: auto; font-size: 11px;">
+                        <button onclick="window.pokemonGame.gameState='menu'; window.pokemonGame.render();">Back</button>
+                        <h3>Inventory</h3>
+                        <div>Pokéballs: ${this.inventory.pokeballs}</div>
+                        <div>Potions: ${this.inventory.potions}</div>
+                        <div>Full Heals: ${this.inventory.fullHeals}</div>
+                        <div>Total EXP: ${this.inventory.exp}</div>
+                    </div>`;
+                } else if (this.gameState === 'overworld') {
+                    let mapHtml = '<div style="display: grid; grid-template-columns: repeat(10, 30px); gap: 1px; margin: 10px 0;">';
+                    for (let y = 0; y < 10; y++) {
+                        for (let x = 0; x < 10; x++) {
+                            const isPlayer = x === this.mapPos.x && y === this.mapPos.y;
+                            mapHtml += `<div style="width: 30px; height: 30px; background: ${isPlayer ? '#ffff00' : '#00aa00'}; border: 1px solid #000;"></div>`;
+                        }
+                    }
+                    mapHtml += '</div>';
 
-                let html = `<div style="padding: 10px; font-size: 11px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                        <div style="flex: 1;">
-                            <strong>${this.enemyPokemon.name} Lv.${this.enemyPokemon.level}</strong>
-                            <div style="width: 200px; height: 20px; border: 1px solid #000; background: #ddd;">
-                                <div style="width: ${enemyHPBar}px; height: 100%; background: ${this.enemyPokemon.hp > this.enemyPokemon.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
-                            </div>
-                            <small>${this.enemyPokemon.hp}/${this.enemyPokemon.maxHp}</small>
+                    const current = this.playerTeam[this.currentPokemonIndex];
+                    gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; font-size: 11px; height: 100%; overflow-y: auto;">
+                        <div style="margin-bottom: 10px;">
+                            <button onclick="window.pokemonGame.gameState='menu'; window.pokemonGame.render();">Menu</button>
+                            <button onclick="window.pokemonGame.checkWildEncounter();">Search</button>
                         </div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                        <div style="flex: 1;">
-                            <strong>${current.name} Lv.${current.level}</strong>
-                            <div style="width: 200px; height: 20px; border: 1px solid #000; background: #ddd;">
-                                <div style="width: ${playerHPBar}px; height: 100%; background: ${current.hp > current.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
+                        <div><strong>${current.name}</strong> Lv.${current.level} - ${current.hp}/${current.maxHp} HP</div>
+                        ${mapHtml}
+                        <div style="margin-top: 10px;">Pokédex: ${this.pokedex.size} | Team: ${this.getAlivePokemon().length}/6</div>
+                    </div>`;
+                } else if (this.gameState === 'battle') {
+                    const current = this.playerTeam[this.currentPokemonIndex];
+                    gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; font-size: 10px; height: 100%; overflow-y: auto;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <div><strong>${this.battleEnemy.name}</strong> Lv.${this.battleEnemy.level}<br/>${this.battleEnemy.hp}/${this.battleEnemy.maxHp} HP
+                                <div style="width: 150px; height: 15px; border: 1px solid #fff; background: #000;">
+                                    <div style="width: ${(this.battleEnemy.hp / this.battleEnemy.maxHp) * 150}px; height: 100%; background: ${this.battleEnemy.hp > this.battleEnemy.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
+                                </div>
                             </div>
-                            <small>${current.hp}/${current.maxHp}</small>
                         </div>
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <strong>Team:</strong>
-                        ${this.playerTeam.map((p, i) => `<div style="padding: 5px; background: ${i === this.currentPokemonIndex ? '#ffff00' : '#c0c0c0'};">
-                            ${p.name} - HP: ${p.hp}/${p.maxHp}
-                        </div>`).join('')}
-                    </div>
-
-                    <div style="border: 1px solid #000; height: 100px; overflow-y: auto; padding: 5px; background: #f0f0f0; font-size: 10px;">
-                        <strong>Battle Log:</strong>
-                        ${this.battleLog.slice(-10).map(log => `<div>${log}</div>`).join('')}
-                    </div>
-                </div>`;
-
-                gameArea.innerHTML = html;
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <div><strong>${current.name}</strong> Lv.${current.level}<br/>${current.hp}/${current.maxHp} HP
+                                <div style="width: 150px; height: 15px; border: 1px solid #fff; background: #000;">
+                                    <div style="width: ${(current.hp / current.maxHp) * 150}px; height: 100%; background: ${current.hp > current.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="border: 1px solid #fff; height: 80px; overflow-y: auto; margin-bottom: 10px; padding: 5px;">
+                            ${this.battleLog.slice(-8).map(log => `<div>${log}</div>`).join('')}
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-bottom: 10px;">
+                            ${current.moves.map((m, i) => `<button onclick="window.pokemonGame.useAttack(${i});" style="padding: 5px; font-size: 9px;">${m}</button>`).join('')}
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
+                            <button onclick="window.pokemonGame.throwPokeball();" style="padding: 5px;">Ball (${this.inventory.pokeballs})</button>
+                            <button onclick="window.pokemonGame.usePotion();" style="padding: 5px;">Potion (${this.inventory.potions})</button>
+                            <button onclick="window.pokemonGame.gameState='battle_switch'; window.pokemonGame.render();">Switch</button>
+                            <button onclick="window.pokemonGame.endBattle(false);">Run</button>
+                        </div>
+                    </div>`;
+                } else if (this.gameState === 'battle_switch') {
+                    gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; font-size: 11px; height: 100%;">
+                        <h3>Choose a Pokemon</h3>
+                        ${this.playerTeam.map((p, i) => `<button onclick="window.pokemonGame.switchPokemon(${i});" style="width: 100%; padding: 8px; margin: 3px 0; text-align: left;">
+                            ${p.name} Lv.${p.level} - ${p.hp}/${p.maxHp}
+                        </button>`).join('')}
+                    </div>`;
+                }
             }
         }
+        
+        // Store reference for onclick handlers
+        window.pokemonGame = null;
 
         class TaskManagerApp {
             constructor(windowEl) {
@@ -1479,7 +1701,10 @@
                     else if (appType === 'pacman') appInstance = new PacManGame(window);
                     else if (appType === 'breakout') appInstance = new BreakoutGame(window);
                     else if (appType === 'solitaire') appInstance = new SolitaireGame(window);
-                    else if (appType === 'pokemon') appInstance = new PokemonGame(window);
+                    else if (appType === 'pokemon') {
+                        appInstance = new PokemonGame(window);
+                        window.pokemonGame = appInstance;
+                    }
                     else if (appType === 'taskmgr') appInstance = new TaskManagerApp(window);
                     else if (appType === 'ie') appInstance = new BrowserApp(window);
                     else if (appType === 'minesweeper') appInstance = new MinesweeperApp(window);
