@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 3D Floating Objects -->
+    <div class="floating-sphere" style="top: 10%; left: 10%; animation-delay: 0s; width: 120px; height: 120px;"></div>
+    <div class="floating-sphere" style="top: 40%; right: 5%; animation-delay: 5s; width: 150px; height: 150px;"></div>
+    <div class="floating-sphere" style="bottom: 20%; left: 8%; animation-delay: 10s; width: 100px; height: 100px;"></div>
+    <div class="floating-sphere" style="top: 50%; right: 10%; animation-delay: 15s; width: 130px; height: 130px;"></div>
+    
     <nav class="navbar">
         <div class="nav-content">
             <h1 class="logo">Will Hatch</h1>
@@ -55,5 +61,35 @@
     <footer>
         <p>&copy; 2026 Will Hatch. All rights reserved.</p>
     </footer>
+
+    <script>
+        // Scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = `slideInUp 0.8s ease-out forwards`;
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Parallax effect on scroll
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const spheres = document.querySelectorAll('.floating-sphere');
+            spheres.forEach((sphere, index) => {
+                sphere.style.transform = `translateY(${scrolled * (0.3 + index * 0.1)}px) translateX(${Math.sin(scrolled * 0.01 + index) * 20}px)`;
+            });
+        });
+    </script>
 </body>
 </html>
