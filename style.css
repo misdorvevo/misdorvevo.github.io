@@ -572,6 +572,103 @@ body {
     margin: 4px 0;
 }
 
+/* ============= FOLDER VIEWER STYLES ============= */
+.folder-viewer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, 80px);
+    gap: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    height: calc(100% - 20px);
+}
+
+.folder-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+    cursor: pointer;
+    user-select: none;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    transition: background-color 0.1s;
+}
+
+.folder-item:hover {
+    background-color: rgba(0, 0, 128, 0.1);
+    border: 1px solid #0000ff;
+}
+
+.folder-item:active {
+    background-color: rgba(0, 0, 128, 0.2);
+}
+
+.folder-icon {
+    width: 32px;
+    height: 32px;
+}
+
+.folder-name {
+    font-size: 10px;
+    text-align: center;
+    word-wrap: break-word;
+    max-width: 70px;
+    color: #000;
+}
+
+.file-viewer {
+    padding: 10px;
+    background: #ffffff;
+    height: 100%;
+    overflow-y: auto;
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+}
+
+.file-viewer pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* ============= APPLICATION STYLES ============= */
+.calculator-app {
+    padding: 10px;
+    background: #c0c0c0;
+    border: 2px inset;
+}
+
+.calculator-app input {
+    background: #000080;
+    color: #ffff00;
+    border: 2px inset;
+    padding: 5px;
+    font-weight: bold;
+}
+
+.winamp-app {
+    border: 2px outset;
+}
+
+@keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        opacity: 1;
+    }
+    20%, 24%, 55% {
+        opacity: 0;
+    }
+}
+
+@keyframes glitch {
+    0% { transform: translateX(0); }
+    20% { transform: translateX(-2px); }
+    40% { transform: translateX(2px); }
+    60% { transform: translateX(-2px); }
+    80% { transform: translateX(2px); }
+    100% { transform: translateX(0); }
+}
+
 @media (max-width: 768px) {
     .desktop-icons {
         gap: 40px;
