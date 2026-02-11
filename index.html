@@ -414,10 +414,17 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
 
         // ============= MINESWEEPER GAME =============
         class MineSweeper {
-            constructor() {
-                this.ROWS = 8;
-                this.COLS = 10;
-                this.MINES = 10;
+            constructor(difficulty = 'beginner') {
+                this.difficulty = difficulty;
+                const difficulties = {
+                    'beginner': { rows: 8, cols: 10, mines: 10 },
+                    'intermediate': { rows: 16, cols: 16, mines: 40 },
+                    'expert': { rows: 16, cols: 30, mines: 99 }
+                };
+                const params = difficulties[difficulty] || difficulties['beginner'];
+                this.ROWS = params.rows;
+                this.COLS = params.cols;
+                this.MINES = params.mines;
                 this.board = [];
                 this.revealed = [];
                 this.flagged = [];
@@ -622,7 +629,6 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
             window.id = windowId;
             window.style.left = (50 + Math.random() * 200) + 'px';
             window.style.top = (50 + Math.random() * 200) + 'px';
-            window.style.width = '350px';
 
             window.innerHTML = `
                 <div class="window-titlebar">
@@ -635,9 +641,16 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
                 <div class="window-content">
                     <div class="minesweeper-game">
                         <div class="game-info">
-                            <div class="game-counter">Mines: <span id="ms-counter">10</span></div>
-                            <button id="ms-new-game-btn" class="game-button">New Game</button>
-                            <div class="game-counter">Time: <span id="ms-timer">0</span>s</div>
+                            <div class="difficulty-buttons">
+                                <button class="difficulty-btn active" data-difficulty="beginner">Beginner</button>
+                                <button class="difficulty-btn" data-difficulty="intermediate">Intermediate</button>
+                                <button class="difficulty-btn" data-difficulty="expert">Expert</button>
+                            </div>
+                            <div class="game-stats">
+                                <div class="game-counter">Mines: <span id="ms-counter">10</span></div>
+                                <button id="ms-new-game-btn" class="game-button">New Game</button>
+                                <div class="game-counter">Time: <span id="ms-timer">0</span>s</div>
+                            </div>
                         </div>
                         <div id="ms-board" class="minesweeper-board"></div>
                     </div>
@@ -649,7 +662,8 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
             const windowObj = {
                 filename: 'MineSweeper.exe',
                 folder: null,
-                element: window
+                element: window,
+                currentDifficulty: 'beginner'
             };
 
             this.windows.push(windowObj);
@@ -658,18 +672,61 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
             window.style.zIndex = ++this.zIndex;
 
             // Initialize game
-            minesweeperGame = new MineSweeper();
+            minesweeperGame = new MineSweeper('beginner');
             minesweeperGame.init();
-            minesweeperGame.render(document.getElementById('ms-board'));
+            
+            const boardEl = document.getElementById('ms-board');
+            minesweeperGame.render(boardEl);
+            
+            // Resize window to fit board
+            this.resizeWindowToBoard(window, minesweeperGame);
+
+            // Difficulty button handlers
+            window.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const difficulty = btn.dataset.difficulty;
+                    windowObj.currentDifficulty = difficulty;
+                    
+                    // Update active button
+                    window.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // New game with difficulty
+                    minesweeperGame = new MineSweeper(difficulty);
+                    minesweeperGame.init();
+                    minesweeperGame.render(boardEl);
+                    document.getElementById('ms-timer').textContent = '0';
+                    
+                    // Resize window
+                    this.resizeWindowToBoard(window, minesweeperGame);
+                });
+            });
 
             document.getElementById('ms-new-game-btn').addEventListener('click', () => {
-                minesweeperGame = new MineSweeper();
+                minesweeperGame = new MineSweeper(windowObj.currentDifficulty);
                 minesweeperGame.init();
-                minesweeperGame.render(document.getElementById('ms-board'));
+                minesweeperGame.render(boardEl);
+                document.getElementById('ms-timer').textContent = '0';
             });
 
             window.querySelector('.minimize-btn').addEventListener('click', () => this.minimizeWindow(windowId));
             window.querySelector('.close-btn').addEventListener('click', () => this.closeWindow(windowId));
+        };
+
+        WindowManager.prototype.resizeWindowToBoard = function(windowEl, game) {
+            // Calculate content size based on board
+            const cellSize = 30;
+            const gap = 1;
+            const boardWidth = (game.COLS * cellSize) + ((game.COLS - 1) * gap) + 8; // padding
+            const boardHeight = (game.ROWS * cellSize) + ((game.ROWS - 1) * gap) + 8; // padding
+            
+            // Add space for controls
+            const contentHeight = boardHeight + 120; // game-info + padding
+            const contentWidth = Math.max(boardWidth, 350); // minimum width
+            
+            // Set window dimensions
+            windowEl.style.width = contentWidth + 'px';
+            windowEl.style.height = contentHeight + 'px';
         };
 
         // Start button (can add start menu later)
