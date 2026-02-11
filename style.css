@@ -692,6 +692,20 @@ h2::before {
     color: var(--color-sage-green);
 }
 
+.focus-message {
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--color-sage-green);
+    background: linear-gradient(135deg, rgba(138, 170, 121, 0.12) 0%, rgba(131, 117, 105, 0.08) 100%);
+    padding: 2.5rem;
+    border-left: 5px solid var(--color-taupe);
+    border-radius: 0;
+    position: relative;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    animation: slideInUp 0.8s ease-out;
+}
+
 footer {
     background: rgba(5, 8, 17, 0.95);
     color: var(--color-pale-slate);
