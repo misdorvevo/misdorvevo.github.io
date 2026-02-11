@@ -57,20 +57,21 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 5px;
-    cursor: pointer;
+    cursor: grab;
     padding: 5px;
     border-radius: 2px;
-    transition: all 0.1s ease;
+    user-select: none;
+    position: relative;
 }
 
-.desktop-icon:hover {
-    background-color: rgba(0, 0, 128, 0.2);
-    border: 1px solid #dfdfdf;
+.desktop-icon.dragging {
+    opacity: 0.7;
+    cursor: grabbing;
 }
 
-.desktop-icon:active {
-    background-color: rgba(0, 0, 128, 0.4);
-    border: 1px dashed #dfdfdf;
+.desktop-icon.selected {
+    background-color: rgba(0, 0, 128, 0.3);
+    border: 1px dashed #0000ff;
 }
 
 .icon-image {
@@ -467,6 +468,15 @@ body {
     background: linear-gradient(90deg, #dfdfdf, #c0c0c0, #808080);
     border: 2px solid;
     border-color: var(--windows-95-light) var(--windows-95-dark) var(--windows-95-dark) var(--windows-95-light);
+}
+
+.selection-box {
+    position: fixed;
+    border: 2px solid #0000ff;
+    background-color: rgba(0, 0, 255, 0.1);
+    pointer-events: none;
+    z-index: 500;
+    display: none;
 }
 
 @media (max-width: 768px) {

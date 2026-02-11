@@ -600,8 +600,44 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
         const windowManager = new WindowManager();
         let minesweeperGame = null;
 
-        // Desktop icon click handlers
-        document.querySelectorAll('.desktop-icon').forEach(icon => {
+        // ============= DESKTOP ICON DRAGGING & SELECTION =============
+        const desktopIcons = document.querySelectorAll('.desktop-icon');
+        const desktopContainer = document.querySelector('.desktop-icons');
+        
+        let draggedIcon = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let selectionBox = null;
+        let isSelecting = false;
+        let selectStartX = 0;
+        let selectStartY = 0;
+
+        // Create selection box element
+        function createSelectionBox() {
+            const box = document.createElement('div');
+            box.className = 'selection-box';
+            document.body.appendChild(box);
+            return box;
+        }
+
+        selectionBox = createSelectionBox();
+
+        // Icon drag handlers
+        desktopIcons.forEach(icon => {
+            icon.addEventListener('mousedown', (e) => {
+                // Only drag on left mouse button
+                if (e.button !== 0) return;
+                
+                draggedIcon = icon;
+                dragStartX = e.clientX - icon.offsetLeft;
+                dragStartY = e.clientY - icon.offsetTop;
+                
+                icon.classList.add('dragging');
+                icon.style.position = 'absolute';
+                icon.style.zIndex = '1000';
+            });
+
+            // Double-click to open
             icon.addEventListener('dblclick', () => {
                 const file = icon.dataset.file;
                 if (file === 'MineSweeper.exe') {
@@ -612,6 +648,92 @@ Pushing creative boundaries while maintaining artistic integrity and collaborati
                     windowManager.openFile(file);
                 }
             });
+
+            // Single click to select
+            icon.addEventListener('click', (e) => {
+                if (e.detail === 1) { // Single click only
+                    // Clear other selections if Ctrl not pressed
+                    if (!e.ctrlKey && !e.metaKey) {
+                        desktopIcons.forEach(i => i.classList.remove('selected'));
+                    }
+                    icon.classList.toggle('selected');
+                }
+            });
+        });
+
+        // Desktop area selection box
+        desktopContainer.addEventListener('mousedown', (e) => {
+            // Only create selection box if clicking on empty space
+            if (e.target.closest('.desktop-icon')) return;
+            
+            isSelecting = true;
+            selectStartX = e.clientX;
+            selectStartY = e.clientY;
+            
+            // Clear selections
+            desktopIcons.forEach(i => i.classList.remove('selected'));
+            
+            selectionBox.style.display = 'block';
+            selectionBox.style.left = selectStartX + 'px';
+            selectionBox.style.top = selectStartY + 'px';
+            selectionBox.style.width = '0px';
+            selectionBox.style.height = '0px';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            // Handle icon dragging
+            if (draggedIcon) {
+                draggedIcon.style.left = (e.clientX - dragStartX) + 'px';
+                draggedIcon.style.top = (e.clientY - dragStartY) + 'px';
+            }
+
+            // Handle selection box
+            if (isSelecting) {
+                const currentX = e.clientX;
+                const currentY = e.clientY;
+                const width = Math.abs(currentX - selectStartX);
+                const height = Math.abs(currentY - selectStartY);
+                const left = Math.min(selectStartX, currentX);
+                const top = Math.min(selectStartY, currentY);
+
+                selectionBox.style.left = left + 'px';
+                selectionBox.style.top = top + 'px';
+                selectionBox.style.width = width + 'px';
+                selectionBox.style.height = height + 'px';
+
+                // Check which icons are in the selection box
+                desktopIcons.forEach(icon => {
+                    const iconRect = icon.getBoundingClientRect();
+                    const boxRect = {
+                        left: left,
+                        top: top,
+                        right: left + width,
+                        bottom: top + height
+                    };
+
+                    // Check if icon overlaps with selection box
+                    if (iconRect.left < boxRect.right &&
+                        iconRect.right > boxRect.left &&
+                        iconRect.top < boxRect.bottom &&
+                        iconRect.bottom > boxRect.top) {
+                        icon.classList.add('selected');
+                    } else {
+                        icon.classList.remove('selected');
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (draggedIcon) {
+                draggedIcon.classList.remove('dragging');
+                draggedIcon = null;
+            }
+
+            if (isSelecting) {
+                isSelecting = false;
+                selectionBox.style.display = 'none';
+            }
         });
 
         // Add openMineSweeper method to WindowManager
