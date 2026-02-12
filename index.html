@@ -1686,22 +1686,23 @@
                 window.querySelector('.close-btn').addEventListener('click', () => this.closeWindow(windowId));
 
                 // Initialize app classes
-                setTimeout(() => {
-                    if (appType === 'calculator') appInstance = new CalculatorApp(window);
-                    else if (appType === 'notepad') appInstance = new NotepadApp(window);
-                    else if (appType === 'paint') appInstance = new PaintApp(window);
-                    else if (appType === 'snake') appInstance = new SnakeGame(window);
-                    else if (appType === 'pacman') appInstance = new PacManGame(window);
-                    else if (appType === 'breakout') appInstance = new BreakoutGame(window);
-                    else if (appType === 'solitaire') appInstance = new SolitaireGame(window);
-                    else if (appType === 'pokemon') {
-                        appInstance = new PokemonGame(window);
-                        window.pokemonGame = appInstance;
-                    }
-                    else if (appType === 'taskmgr') appInstance = new TaskManagerApp(window);
-                    else if (appType === 'ie') appInstance = new BrowserApp(window);
-                    else if (appType === 'minesweeper') appInstance = new MinesweeperApp(window);
-                }, 100);
+                if (appType === 'pokemon') {
+                    const appInstance = new PokemonGame(window);
+                    window.pokemonGame = appInstance;
+                } else {
+                    setTimeout(() => {
+                        if (appType === 'calculator') appInstance = new CalculatorApp(window);
+                        else if (appType === 'notepad') appInstance = new NotepadApp(window);
+                        else if (appType === 'paint') appInstance = new PaintApp(window);
+                        else if (appType === 'snake') appInstance = new SnakeGame(window);
+                        else if (appType === 'pacman') appInstance = new PacManGame(window);
+                        else if (appType === 'breakout') appInstance = new BreakoutGame(window);
+                        else if (appType === 'solitaire') appInstance = new SolitaireGame(window);
+                        else if (appType === 'taskmgr') appInstance = new TaskManagerApp(window);
+                        else if (appType === 'ie') appInstance = new BrowserApp(window);
+                        else if (appType === 'minesweeper') appInstance = new MinesweeperApp(window);
+                    }, 100);
+                }
             }
 
             generateVirusWindow(type) {
