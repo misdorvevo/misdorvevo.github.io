@@ -740,6 +740,256 @@
             }
         }
 
+        // Sprite Generator - Creates unique pixel art for each Pokemon
+        const SpriteGenerator = {
+            drawPokemon(ctx, name, x, y, size = 32) {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(x, y, size, size); // Clear background
+
+                const typeColors = {
+                    'Grass': '#95e77d', 'Fire': '#ff6b6b', 'Water': '#4ecdc4', 'Electric': '#ffd93d',
+                    'Dragon': '#a78bfa', 'Normal': '#d4d4d4', 'Ground': '#e6b87e', 'Flying': '#b3e0ff',
+                    'Poison': '#d946ef', 'Ice': '#7dd3fc', 'Bug': '#86efac', 'Rock': '#a1a1a1',
+                    'Steel': '#c0c0c0', 'Fighting': '#fbbf24', 'Psychic': '#f472b6', 'Ghost': '#c084fc',
+                    'Dark': '#6b7280', 'Fairy': '#f8bbd0'
+                };
+
+                const data = POKEMON_DATA[name];
+                const color = typeColors[data.type] || '#999';
+
+                // Draw different shapes based on Pokemon type
+                if (data.type === 'Fire') {
+                    this.drawFire(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Water') {
+                    this.drawWater(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Grass') {
+                    this.drawGrass(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Electric') {
+                    this.drawElectric(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Dragon') {
+                    this.drawDragon(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Flying') {
+                    this.drawFlying(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Ground') {
+                    this.drawGround(ctx, x + size/2, y + size/2, size/3, color);
+                } else if (data.type === 'Bug') {
+                    this.drawBug(ctx, x + size/2, y + size/2, size/3, color);
+                } else {
+                    this.drawGeneric(ctx, x + size/2, y + size/2, size/3, color);
+                }
+            },
+
+            drawFire(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Main body
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + r * 0.5, r * 0.6, r * 0.8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Flames
+                ctx.beginPath();
+                ctx.ellipse(cx - r * 0.4, cy - r * 0.4, r * 0.4, r * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + r * 0.4, cy - r * 0.4, r * 0.4, r * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - r * 0.8, r * 0.3, r * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.25, cy - r * 0.1, r * 0.15, r * 0.15);
+                ctx.fillRect(cx + r * 0.15, cy - r * 0.1, r * 0.15, r * 0.15);
+            },
+
+            drawWater(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+                // Water waves
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(cx - r * 0.3, cy + r * 0.5, r * 0.3, 0, Math.PI);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx + r * 0.3, cy + r * 0.5, r * 0.3, 0, Math.PI);
+                ctx.stroke();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.25, cy - r * 0.15, r * 0.15, r * 0.15);
+                ctx.fillRect(cx + r * 0.15, cy - r * 0.15, r * 0.15, r * 0.15);
+            },
+
+            drawGrass(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body
+                ctx.fillRect(cx - r * 0.4, cy - r * 0.2, r * 0.8, r * 0.8);
+                // Leaves
+                ctx.beginPath();
+                ctx.ellipse(cx - r * 0.5, cy - r * 0.6, r * 0.2, r * 0.5, -0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + r * 0.5, cy - r * 0.6, r * 0.2, r * 0.5, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - r * 0.8, r * 0.15, r * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.25, cy - r * 0.05, r * 0.15, r * 0.15);
+                ctx.fillRect(cx + r * 0.15, cy - r * 0.05, r * 0.15, r * 0.15);
+            },
+
+            drawElectric(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+                // Lightning bolts
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - r * 0.3, cy - r * 0.7);
+                ctx.lineTo(cx - r * 0.1, cy - r * 0.2);
+                ctx.lineTo(cx - r * 0.35, cy);
+                ctx.lineTo(cx - r * 0.05, cy + r * 0.6);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cx + r * 0.3, cy - r * 0.7);
+                ctx.lineTo(cx + r * 0.1, cy - r * 0.2);
+                ctx.lineTo(cx + r * 0.35, cy);
+                ctx.lineTo(cx + r * 0.05, cy + r * 0.6);
+                ctx.stroke();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.2, cy - r * 0.2, r * 0.15, r * 0.15);
+                ctx.fillRect(cx + r * 0.1, cy - r * 0.2, r * 0.15, r * 0.15);
+            },
+
+            drawDragon(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + r * 0.2, r * 0.8, r * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Neck
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - r * 0.4, r * 0.5, r * 0.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Head
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - r * 0.9, r * 0.6, r * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Horn
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - r * 1.3);
+                ctx.lineTo(cx - r * 0.15, cy - r * 1.5);
+                ctx.lineTo(cx + r * 0.15, cy - r * 1.5);
+                ctx.closePath();
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.2, cy - r * 0.95, r * 0.12, r * 0.12);
+                ctx.fillRect(cx + r * 0.1, cy - r * 0.95, r * 0.12, r * 0.12);
+            },
+
+            drawFlying(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + r * 0.3, r * 0.5, r * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Wings
+                ctx.beginPath();
+                ctx.ellipse(cx - r * 0.7, cy - r * 0.1, r * 0.4, r * 0.6, -0.4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + r * 0.7, cy - r * 0.1, r * 0.4, r * 0.6, 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.15, cy - r * 0.1, r * 0.12, r * 0.12);
+                ctx.fillRect(cx + r * 0.05, cy - r * 0.1, r * 0.12, r * 0.12);
+            },
+
+            drawGround(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body - rounded square
+                ctx.beginPath();
+                ctx.roundRect(cx - r * 0.6, cy - r * 0.5, r * 1.2, r * 0.8, r * 0.2);
+                ctx.fill();
+                // Spikes
+                ctx.beginPath();
+                ctx.moveTo(cx - r * 0.5, cy - r * 0.7);
+                ctx.lineTo(cx - r * 0.35, cy - r * 1.1);
+                ctx.lineTo(cx - r * 0.2, cy - r * 0.7);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - r * 0.8);
+                ctx.lineTo(cx, cy - r * 1.2);
+                ctx.lineTo(cx + r * 0.2, cy - r * 0.8);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(cx + r * 0.5, cy - r * 0.7);
+                ctx.lineTo(cx + r * 0.35, cy - r * 1.1);
+                ctx.lineTo(cx + r * 0.2, cy - r * 0.7);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.25, cy - r * 0.15, r * 0.15, r * 0.15);
+                ctx.fillRect(cx + r * 0.1, cy - r * 0.15, r * 0.15, r * 0.15);
+            },
+
+            drawBug(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                // Body segments
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - r * 0.4, r * 0.4, r * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + r * 0.1, r * 0.5, r * 0.6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + r * 0.6, r * 0.3, r * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Antennae
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - r * 0.2, cy - r * 0.8);
+                ctx.lineTo(cx - r * 0.4, cy - r * 1.2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cx + r * 0.2, cy - r * 0.8);
+                ctx.lineTo(cx + r * 0.4, cy - r * 1.2);
+                ctx.stroke();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.15, cy - r * 0.5, r * 0.12, r * 0.12);
+                ctx.fillRect(cx + r * 0.05, cy - r * 0.5, r * 0.12, r * 0.12);
+            },
+
+            drawGeneric(ctx, cx, cy, r, color) {
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r * 0.7, 0, Math.PI * 2);
+                ctx.fill();
+                // Eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(cx - r * 0.25, cy - r * 0.15, r * 0.15, r * 0.15);
+                ctx.fillRect(cx + r * 0.15, cy - r * 0.15, r * 0.15, r * 0.15);
+                // Mouth
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy + r * 0.2, r * 0.2, 0, Math.PI);
+                ctx.stroke();
+            }
+        };
+
         // Pokemon Database
         const POKEMON_DATA = {
             'Bulbasaur': {hp: 45, att: 49, def: 49, spA: 65, spD: 65, spe: 45, type: 'Grass', moves: ['Tackle', 'Growl', 'Vine Whip']},
@@ -1062,49 +1312,79 @@
                     const current = this.playerTeam[this.currentPokemonIndex];
                     gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; font-size: 11px; height: 100%; overflow-y: auto;">
                         <div style="margin-bottom: 10px;">
-                            <button onclick="window.pokemonGame.gameState='menu'; window.pokemonGame.render();">Menu</button>
-                            <button onclick="window.pokemonGame.checkWildEncounter();">Search</button>
+                            <button onclick="window.pokemonGame.gameState='menu'; window.pokemonGame.render();" style="background: #333; color: #fff; border: 1px solid #666; padding: 5px 10px; cursor: pointer;">Menu</button>
+                            <button onclick="window.pokemonGame.checkWildEncounter();" style="background: #333; color: #fff; border: 1px solid #666; padding: 5px 10px; cursor: pointer;">Search</button>
                         </div>
-                        <div><strong>${current.name}</strong> Lv.${current.level} - ${current.hp}/${current.maxHp} HP</div>
+                        <div style="margin-bottom: 10px; padding: 5px; background: #1a1a1a; border: 1px solid #666;">
+                            <canvas id="current-sprite" width="48" height="48" style="margin-right: 10px; vertical-align: middle;"></canvas>
+                            <span><strong>${current.name}</strong> Lv.${current.level} - ${current.hp}/${current.maxHp} HP</span>
+                        </div>
                         ${mapHtml}
-                        <div style="margin-top: 10px;">Pokédex: ${this.pokedex.size} | Team: ${this.getAlivePokemon().length}/6</div>
+                        <div style="margin-top: 10px; padding: 5px; background: #1a1a1a; border: 1px solid #666;">Pokédex: ${this.pokedex.size} | Team: ${this.getAlivePokemon().length}/6</div>
                     </div>`;
+                    
+                    setTimeout(() => {
+                        const canvas = gameArea.querySelector('#current-sprite');
+                        if (canvas) {
+                            const ctx = canvas.getContext('2d');
+                            SpriteGenerator.drawPokemon(ctx, current.name, 0, 0, 48);
+                        }
+                    }, 50);
                 } else if (this.gameState === 'battle') {
                     const current = this.playerTeam[this.currentPokemonIndex];
                     gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; font-size: 10px; height: 100%; overflow-y: auto;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                            <div><strong>${this.battleEnemy.name}</strong> Lv.${this.battleEnemy.level}<br/>${this.battleEnemy.hp}/${this.battleEnemy.maxHp} HP
-                                <div style="width: 150px; height: 15px; border: 1px solid #fff; background: #000;">
-                                    <div style="width: ${(this.battleEnemy.hp / this.battleEnemy.maxHp) * 150}px; height: 100%; background: ${this.battleEnemy.hp > this.battleEnemy.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;">
+                            <div style="flex: 1;">
+                                <canvas id="enemy-sprite" width="64" height="64" style="background: #1a1a1a; margin-bottom: 5px;"></canvas>
+                                <div><strong>${this.battleEnemy.name}</strong> Lv.${this.battleEnemy.level}</div>
+                                <div>${this.battleEnemy.hp}/${this.battleEnemy.maxHp} HP</div>
+                                <div style="width: 120px; height: 12px; border: 1px solid #fff; background: #000;">
+                                    <div style="width: ${(this.battleEnemy.hp / this.battleEnemy.maxHp) * 120}px; height: 100%; background: ${this.battleEnemy.hp > this.battleEnemy.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
+                                </div>
+                            </div>
+                            <div style="flex: 1; text-align: right;">
+                                <canvas id="player-sprite" width="64" height="64" style="background: #1a1a1a; margin-bottom: 5px;"></canvas>
+                                <div><strong>${current.name}</strong> Lv.${current.level}</div>
+                                <div>${current.hp}/${current.maxHp} HP</div>
+                                <div style="width: 120px; height: 12px; border: 1px solid #fff; background: #000; margin-left: auto;">
+                                    <div style="width: ${(current.hp / current.maxHp) * 120}px; height: 100%; background: ${current.hp > current.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
                                 </div>
                             </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
-                            <div><strong>${current.name}</strong> Lv.${current.level}<br/>${current.hp}/${current.maxHp} HP
-                                <div style="width: 150px; height: 15px; border: 1px solid #fff; background: #000;">
-                                    <div style="width: ${(current.hp / current.maxHp) * 150}px; height: 100%; background: ${current.hp > current.maxHp / 2 ? '#00ff00' : '#ff0000'};"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="border: 1px solid #fff; height: 80px; overflow-y: auto; margin-bottom: 10px; padding: 5px;">
-                            ${this.battleLog.slice(-8).map(log => `<div>${log}</div>`).join('')}
+                        <div style="border: 1px solid #fff; height: 70px; overflow-y: auto; margin-bottom: 10px; padding: 5px;">
+                            ${this.battleLog.slice(-6).map(log => `<div>${log}</div>`).join('')}
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-bottom: 10px;">
-                            ${current.moves.map((m, i) => `<button onclick="window.pokemonGame.useAttack(${i});" style="padding: 5px; font-size: 9px;">${m}</button>`).join('')}
+                            ${current.moves.map((m, i) => `<button onclick="window.pokemonGame.useAttack(${i});" style="padding: 5px; font-size: 9px; background: #333; color: #fff; border: 1px solid #666; cursor: pointer;">${m}</button>`).join('')}
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px;">
-                            <button onclick="window.pokemonGame.throwPokeball();" style="padding: 5px;">Ball (${this.inventory.pokeballs})</button>
-                            <button onclick="window.pokemonGame.usePotion();" style="padding: 5px;">Potion (${this.inventory.potions})</button>
-                            <button onclick="window.pokemonGame.gameState='battle_switch'; window.pokemonGame.render();">Switch</button>
-                            <button onclick="window.pokemonGame.endBattle(false);">Run</button>
+                            <button onclick="window.pokemonGame.throwPokeball();" style="padding: 5px; background: #333; color: #fff; border: 1px solid #666; cursor: pointer;">Ball (${this.inventory.pokeballs})</button>
+                            <button onclick="window.pokemonGame.usePotion();" style="padding: 5px; background: #333; color: #fff; border: 1px solid #666; cursor: pointer;">Potion (${this.inventory.potions})</button>
+                            <button onclick="window.pokemonGame.gameState='battle_switch'; window.pokemonGame.render();" style="padding: 5px; background: #333; color: #fff; border: 1px solid #666; cursor: pointer;">Switch</button>
+                            <button onclick="window.pokemonGame.endBattle(false);" style="padding: 5px; background: #333; color: #fff; border: 1px solid #666; cursor: pointer;">Run</button>
                         </div>
                     </div>`;
+                    
+                    // Draw sprites after DOM is rendered
+                    setTimeout(() => {
+                        const enemyCanvas = gameArea.querySelector('#enemy-sprite');
+                        const playerCanvas = gameArea.querySelector('#player-sprite');
+                        if (enemyCanvas && playerCanvas) {
+                            const enemyCtx = enemyCanvas.getContext('2d');
+                            const playerCtx = playerCanvas.getContext('2d');
+                            SpriteGenerator.drawPokemon(enemyCtx, this.battleEnemy.name, 0, 0, 64);
+                            SpriteGenerator.drawPokemon(playerCtx, current.name, 0, 0, 64);
+                        }
+                    }, 50);
                 } else if (this.gameState === 'battle_switch') {
                     gameArea.innerHTML = `<div style="padding: 10px; background: #000; color: #fff; font-size: 11px; height: 100%;">
                         <h3>Choose a Pokemon</h3>
-                        ${this.playerTeam.map((p, i) => `<button onclick="window.pokemonGame.switchPokemon(${i});" style="width: 100%; padding: 8px; margin: 3px 0; text-align: left;">
-                            ${p.name} Lv.${p.level} - ${p.hp}/${p.maxHp}
-                        </button>`).join('')}
+                        ${this.playerTeam.map((p, i) => {
+                            const status = p.hp <= 0 ? ' (fainted)' : '';
+                            return `<button onclick="window.pokemonGame.switchPokemon(${i});" style="width: 100%; padding: 8px; margin: 3px 0; text-align: left; background: #333; color: #fff; border: 1px solid #666; cursor: pointer;">
+                                ${p.name} Lv.${p.level} - ${p.hp}/${p.maxHp}${status}
+                            </button>`;
+                        }).join('')}
                     </div>`;
                 }
             }
