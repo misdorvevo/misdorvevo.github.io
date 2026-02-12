@@ -1068,17 +1068,83 @@
                 this.render();
             }
 
+            // Utility: pick random item
+            randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+            // Generate a fun nickname for a species
+            generateNickname(species) {
+                const prefixes = ['Pyro', 'Neo', 'Shadow', 'Aero', 'Hydro', 'Terra', 'Volt', 'Glacia', 'Iron', 'Crimson', 'Verdant', 'Gale', 'Blaze', 'Nimbus'];
+                const suffixes = ['claw', 'wing', 'tail', 'pelt', 'fang', 'shell', 'burst', 'flare', 'bloom', 'strike'];
+                const p = this.randomFrom(prefixes);
+                const s = this.randomFrom(suffixes);
+                return `${p}${species.slice(0,3)}-${s}`;
+            }
+
+            // Generate an ability based on type
+            generateAbility(type) {
+                const abilityPool = {
+                    'Fire': ['Blaze Boost', 'Ember Veil', 'Heat Surge'],
+                    'Water': ['Torrent Flow', 'Aqua Guard', 'Tidecaller'],
+                    'Grass': ['Leaf Shield', 'Photosynthesis', 'Overgrow Plus'],
+                    'Electric': ['Static Spark', 'Lightning Rod', 'Charge Surge'],
+                    'Dragon': ['Draconic Might', 'Scale Ward', 'Dragonheart'],
+                    'Normal': ['Sturdy', 'Thick Fat', 'Inner Focus'],
+                    'Ground': ['Earth Mastery', 'Sand Veil', 'Solid Rock'],
+                    'Flying': ['Wind Rider', 'Aerial Ace', 'Feather Glide'],
+                    'Poison': ['Toxic Touch', 'Venom Guard', 'Corrosive'],
+                    'Ice': ['Frost Armor', 'Snow Cloak', 'Glacier Skin'],
+                    'Bug': ['Swarm', 'Compound Eyes', 'Shield Dust'],
+                    'Rock': ['Rock Head', 'Solidify', 'Stonewall'],
+                    'Steel': ['Iron Will', 'Metal Clad', 'Magnetic'],
+                    'Fighting': ['Grit', 'Battle Heart', 'Iron Fist'],
+                    'Psychic': ['Mind Bend', 'Synchronize', 'Telepathy'],
+                    'Ghost': ['Spectral', 'Cursed Body', 'Insubstantial'],
+                    'Dark': ['Nightfall', 'Mischief', 'Shadow Cloak'],
+                    'Fairy': ['Pixilate', 'Fairy Aura', 'Charming']
+                };
+                return (abilityPool[type] && this.randomFrom(abilityPool[type])) || 'Adaptive';
+            }
+
+            // Create a signature move name and register it into MOVES (if not present)
+            generateSignatureMove(type, species) {
+                const verbs = ['Burst', 'Strike', 'Blaze', 'Surge', 'Crash', 'Whirl', 'Fang', 'Pulse', 'Gust', 'Tide'];
+                const verb = this.randomFrom(verbs);
+                const moveName = `${species.slice(0,3)}-${verb}`;
+                if (!MOVES[moveName]) {
+                    // Assign power based on type roughness
+                    const basePower = this.randomFrom([70, 80, 90, 100, 110]);
+                    MOVES[moveName] = {power: basePower, acc: 95, type: type};
+                }
+                return moveName;
+            }
+
             createStarterTeam() {
-                return [
-                    this.createPokemon('Pikachu', 5),
-                    this.createPokemon('Squirtle', 5),
-                    this.createPokemon('Bulbasaur', 5)
-                ];
+                const speciesKeys = Object.keys(POKEMON_DATA);
+                const starters = [];
+                const used = new Set();
+                while (starters.length < 3) {
+                    const species = this.randomFrom(speciesKeys);
+                    if (used.has(species)) continue;
+                    used.add(species);
+                    starters.push(this.createPokemon(species, 5));
+                }
+                return starters;
             }
 
             createPokemon(species, level) {
                 const data = POKEMON_DATA[species];
-                const baseStats = {name: species, level, exp: 0, ...data};
+                if (!data) throw new Error('Unknown species: ' + species);
+
+                // Procedural variant data
+                const nickname = this.generateNickname(species);
+                const ability = this.generateAbility(data.type);
+                const signature = this.generateSignatureMove(data.type, species);
+
+                // Compose moveset: take up to 2 base moves + signature
+                const baseMoves = (data.moves || []).slice(0, 2);
+                const moveset = baseMoves.concat([signature]).slice(0, 4);
+
+                const baseStats = {species: species, name: nickname, level, exp: 0, moves: moveset, ability: ability, signature: signature, type: data.type};
                 baseStats.hp = Math.floor((2 * data.hp * level) / 100) + level + 10;
                 baseStats.maxHp = baseStats.hp;
                 baseStats.att = Math.floor((2 * data.att * level) / 100) + 5;
