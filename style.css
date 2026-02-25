@@ -104,11 +104,14 @@ body {
     left: 0;
     right: 0;
     bottom: 28px;
-    pointer-events: none;
+    /* keep layer on top of desktop icons but allow pointer events; windows themselves will handle interactions */
+    z-index: 1;
+    pointer-events: auto;
 }
 
+/* children windows are interactive by default */
 .windows-container > * {
-    pointer-events: auto;
+    /* no special pointer-events rule needed */
 }
 
 .window {

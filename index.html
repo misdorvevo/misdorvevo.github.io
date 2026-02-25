@@ -115,6 +115,15 @@
     </div>
 
     <script>
+        // debugging helpers
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('JS Error:', message, 'at', source + ':' + lineno + ':' + colno, error);
+            alert('JavaScript error: ' + message + ' at ' + lineno + ':' + colno);
+        };
+        console.log('script loaded');
+        // optionally show alert to verify execution
+        // alert('script loaded');
+
         // ============= FULLY FUNCTIONAL APPLICATIONS - ALL WORKING =============
 
         // ============= APPLICATION CLASSES =============
@@ -1319,11 +1328,13 @@
         }
 
         // ============= INITIALIZATION =============
-        const windowManager = new WindowManager();
+        let windowManager;
+        try {
+            windowManager = new WindowManager();
 
-        // Auto-open welcome notepad on page load with specific content
-        setTimeout(() => {
-            const welcomeText = `Welcome
+            // Auto-open welcome notepad on page load with specific content
+            setTimeout(() => {
+                const welcomeText = `Welcome
 
 welcome to misdorvevo.com. here i am developing some tools to assist indepedent artsits manage their career. feel free to click around my computer and try things out.
 
@@ -1563,6 +1574,11 @@ vv`;
         }
         updateTime();
         setInterval(updateTime, 1000);
+        // end of initialization
+        } catch (e) {
+            alert('Initialization error: ' + e);
+            console.error('Initialization error', e);
+        }
     </script>
     <!-- right-click context menu -->
     <div id="context-menu" class="context-menu"></div>
