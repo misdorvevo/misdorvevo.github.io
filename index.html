@@ -221,7 +221,8 @@
                 this.windowEl = windowEl;
                 this.textarea = windowEl.querySelector('.notepad-textarea');
                 this.title = windowEl.querySelector('.window-title');
-                this.filename = 'Untitled.txt';
+                // use title as filename if available
+                this.filename = (this.title && this.title.textContent) ? this.title.textContent : 'Untitled.txt';
                 this.setupHandlers();
                 this.loadFile();
             }
@@ -246,21 +247,23 @@
             }
 
             saveFile() {
-                localStorage.setItem('notepad_' + this.filename, this.textarea.value);
+                // store in filesystem tree
+                saveFileAtPath(this.filename, this.textarea.value);
                 alert('File saved as ' + this.filename);
             }
 
             openFile() {
-                const name = prompt('Filename to open:', 'notes.txt');
+                const name = prompt('Filename to open (path allowed):', 'notes.txt');
                 if (!name) return;
-                const content = localStorage.getItem('notepad_' + name) || '';
+                const content = readFileAtPath(name) || '';
                 this.textarea.value = content;
                 this.filename = name;
-                this.title.textContent = name;
+                if (this.title) this.title.textContent = name;
             }
 
             loadFile() {
-                const saved = localStorage.getItem('notepad_Untitled.txt');
+                const key = 'notepad_' + (this.filename || 'Untitled.txt');
+                const saved = localStorage.getItem(key);
                 if (saved) this.textarea.value = saved;
             }
         }
@@ -424,7 +427,137 @@
         }
 
         // ============= ENHANCED FILE SYSTEM WITH 20+ APPLICATIONS =============
-        const fileSystem = {
+        // filesystem is hierarchical; we persist it to localStorage so user changes survive reloads.
+        function loadFileSystem() {
+            const saved = localStorage.getItem('fs');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    console.error('failed to parse saved filesystem', e);
+                }
+            }
+            return null;
+        }
+
+        function saveFileSystem() {
+            try {
+                localStorage.setItem('fs', JSON.stringify(fileSystem));
+            } catch (e) {
+                console.error('failed to save filesystem', e);
+            }
+        }
+
+        function ensureFolder(path) {
+            const parts = path.split('/').filter(p => p);
+            let node = fileSystem;
+            for (const p of parts) {
+                if (!node.folders) node.folders = {};
+                if (!node.folders[p]) node.folders[p] = { files: {}, folders: {} };
+                node = node.folders[p];
+            }
+            return node;
+        }
+
+        function getFolder(path) {
+            if (!path) return fileSystem;
+            const parts = path.split('/').filter(p => p);
+            let node = fileSystem;
+            for (const p of parts) {
+                if (!node.folders || !node.folders[p]) return undefined;
+                node = node.folders[p];
+            }
+            return node;
+        }
+
+        function saveFileAtPath(path, content) {
+            const idx = path.lastIndexOf('/');
+            const filename = idx >= 0 ? path.slice(idx + 1) : path;
+            const folderpath = idx >= 0 ? path.slice(0, idx) : '';
+            const folder = ensureFolder(folderpath);
+            folder.files[filename] = { type: 'text', icon: 'document', content };
+            saveFileSystem();
+        }
+
+        function readFileAtPath(path) {
+            const idx = path.lastIndexOf('/');
+            const filename = idx >= 0 ? path.slice(idx + 1) : path;
+            const folderpath = idx >= 0 ? path.slice(0, idx) : '';
+            const folder = getFolder(folderpath);
+            if (folder && folder.files && folder.files[filename]) {
+                return folder.files[filename].content;
+            }
+            return '';
+        }
+
+        function deletePath(path) {
+            const idx = path.lastIndexOf('/');
+            const filename = idx >= 0 ? path.slice(idx + 1) : path;
+            const folderpath = idx >= 0 ? path.slice(0, idx) : '';
+            const folder = getFolder(folderpath);
+            if (!folder) return;
+            if (folder.files && folder.files[filename]) {
+                delete folder.files[filename];
+            } else if (folder.folders && folder.folders[filename]) {
+                delete folder.folders[filename];
+            }
+            saveFileSystem();
+        }
+
+        // clipboard for copy/paste operations
+        let clipboard = null; // { path:string, type:'file'|'folder' }
+
+        function renamePath(oldPath, newPath) {
+            if (oldPath === newPath) return;
+            const content = readFileAtPath(oldPath);
+            if (content === '' && oldPath !== newPath) {
+                // folder rename or move
+                const idxOld = oldPath.lastIndexOf('/');
+                const idxNew = newPath.lastIndexOf('/');
+                const oldName = idxOld >= 0 ? oldPath.slice(idxOld+1) : oldPath;
+                const newName = idxNew >= 0 ? newPath.slice(idxNew+1) : newPath;
+                const parentOld = getFolder(idxOld>=0? oldPath.slice(0,idxOld): '');
+                const parentNew = getFolder(idxNew>=0? newPath.slice(0,idxNew): '') || ensureFolder(idxNew>=0? newPath.slice(0,idxNew): '');
+                if (parentOld && parentOld.folders && parentOld.folders[oldName]) {
+                    parentNew.folders[newName] = parentOld.folders[oldName];
+                    delete parentOld.folders[oldName];
+                    saveFileSystem();
+                }
+            } else {
+                // file rename/move
+                saveFileAtPath(newPath, content);
+                deletePath(oldPath);
+            }
+        }
+
+        // deep copy one path to another location
+        function copyPath(srcPath, destPath) {
+            const idx = srcPath.lastIndexOf('/');
+            const name = idx >= 0 ? srcPath.slice(idx + 1) : srcPath;
+            const folderpath = idx >= 0 ? srcPath.slice(0, idx) : '';
+            const folder = getFolder(folderpath);
+            if (!folder) return;
+            if (folder.files && folder.files[name]) {
+                // file copy
+                const content = folder.files[name].content;
+                saveFileAtPath(destPath, content);
+            } else if (folder.folders && folder.folders[name]) {
+                // folder copy (deep clone)
+                const node = folder.folders[name];
+                const clone = JSON.parse(JSON.stringify(node));
+                const idxDest = destPath.lastIndexOf('/');
+                const destFolderPath = idxDest >= 0 ? destPath.slice(0, idxDest) : '';
+                const destParent = getFolder(destFolderPath) || ensureFolder(destFolderPath);
+                const newName = idxDest >= 0 ? destPath.slice(idxDest + 1) : destPath;
+                destParent.folders[newName] = clone;
+                saveFileSystem();
+            }
+        }
+
+        // build or load the filesystem
+        let fileSystem = loadFileSystem();
+        if (!fileSystem) {
+            fileSystem = {
             files: {
                 'About.txt': {
                     type: 'text',
@@ -559,9 +692,12 @@
                     return;
                 }
 
+                // compute full path
+                const fullPath = fromFolder ? `${fromFolder}/${filename}` : filename;
                 let fileData;
                 if (fromFolder) {
-                    fileData = fileSystem.folders[fromFolder].files[filename];
+                    const folder = getFolder(fromFolder);
+                    fileData = folder && folder.files ? folder.files[filename] : null;
                 } else {
                     fileData = fileSystem.files[filename];
                 }
@@ -574,28 +710,17 @@
                     return;
                 }
 
-                const windowElement = this.createWindowElement(filename, fileData, fromFolder);
-                this.container.appendChild(windowElement);
-
-                const windowObj = {
-                    filename,
-                    folder: fromFolder,
-                    element: windowElement,
-                    content: fileData.content
-                };
-
-                this.windows.push(windowObj);
-                this.addTaskbarButton(filename, windowObj);
-                this.makeWindowDraggable(windowElement);
-                windowElement.style.zIndex = ++this.zIndex;
+                // open text file in notepad for editing
+                const content = readFileAtPath(fullPath) || fileData.content || '';
+                this.openApplication('notepad', fullPath, content);
             }
 
-            openApplication(appType, appName) {
+            openApplication(appType, appName, initialContent) {
                 const existingWindow = this.windows.find(w => w.appType === appType);
                 if (existingWindow) {
                     existingWindow.element.style.zIndex = ++this.zIndex;
                     existingWindow.element.classList.remove('minimized');
-                    return;
+                    return existingWindow.element;
                 }
 
                 const windowId = `window-${this.windows.length}`;
@@ -721,7 +846,15 @@
                 // Initialize app classes
                 setTimeout(() => {
                         if (appType === 'calculator') appInstance = new CalculatorApp(window);
-                        else if (appType === 'notepad') appInstance = new NotepadApp(window);
+                        else if (appType === 'notepad') {
+                            appInstance = new NotepadApp(window);
+                            if (initialContent && appInstance.textarea) {
+                                appInstance.textarea.value = initialContent;
+                                // update storage too
+                                appInstance.filename = appName || appInstance.filename;
+                                appInstance.title.textContent = appInstance.filename;
+                            }
+                        }
                         else if (appType === 'paint') appInstance = new PaintApp(window);
 
                         else if (appType === 'taskmgr') appInstance = new TaskManagerApp(window);
@@ -741,29 +874,10 @@
             }
 
             openFolder(folderName) {
-                const existingWindow = this.windows.find(w => w.folder === folderName && w.filename === folderName);
-                if (existingWindow) {
-                    existingWindow.element.style.zIndex = ++this.zIndex;
-                    existingWindow.element.classList.remove('minimized');
-                    return;
-                }
-
-                const folder = fileSystem.folders[folderName];
+                const folder = getFolder(folderName);
                 if (!folder) return;
-
-                const windowElement = this.createFolderWindow(folderName, folder);
-                this.container.appendChild(windowElement);
-
-                const windowObj = {
-                    filename: folderName,
-                    folder: folderName,
-                    element: windowElement
-                };
-
-                this.windows.push(windowObj);
-                this.addTaskbarButton(folderName, windowObj);
-                this.makeWindowDraggable(windowElement);
-                windowElement.style.zIndex = ++this.zIndex;
+                // reuse openFolderPath for navigation
+                this.openFolderPath(folderName, folder);
             }
 
             createWindowElement(filename, fileData, fromFolder) {
@@ -827,7 +941,7 @@
                 // Add files
                 for (const [filename, fileData] of Object.entries(folder.files)) {
                     itemsHtml += `
-                        <div class="folder-item" data-file="${filename}" data-folder="${folderName}" data-type="file">
+                        <div class="folder-item" data-file="${filename}" data-path="${folderName}/${filename}" data-folder="${folderName}" data-type="file">
                             <svg class="folder-icon" viewBox="0 0 24 24" width="32" height="32">
                                 <path d="M 3 2 L 3 20 L 17 20 L 17 7 L 12 2 Z" fill="#ffffff" stroke="#000" stroke-width="1"/>
                                 <path d="M 12 2 L 17 7 L 12 7 Z" fill="#e6e6e6" stroke="#000" stroke-width="0.5"/>
@@ -884,6 +998,8 @@
                 window.style.top = (50 + Math.random() * 200) + 'px';
                 window.style.width = '500px';
                 window.style.minHeight = '300px';
+                // keep track of the current path for context menus
+                window.dataset.folderPath = path;
 
                 let itemsHtml = '';
                 
@@ -903,7 +1019,7 @@
 
                 for (const [filename, fileData] of Object.entries(folder.files)) {
                     itemsHtml += `
-                        <div class="folder-item" data-file="${filename}" data-type="file">
+                        <div class="folder-item" data-file="${filename}" data-path="${path}/${filename}" data-type="file">
                             <svg class="folder-icon" viewBox="0 0 24 24" width="32" height="32">
                                 <path d="M 3 2 L 3 20 L 17 20 L 17 7 L 12 2 Z" fill="#ffffff" stroke="#000" stroke-width="1"/>
                                 <path d="M 12 2 L 17 7 L 12 7 Z" fill="#e6e6e6" stroke="#000" stroke-width="0.5"/>
@@ -922,6 +1038,10 @@
                         </div>
                     </div>
                     <div class="window-content">
+                        <div style="padding:5px;">
+                            <button class="new-folder-btn" style="margin-right:5px;">New Folder</button>
+                            <button class="new-file-btn">New File</button>
+                        </div>
                         <div class="folder-viewer">
                             ${itemsHtml}
                         </div>
@@ -930,9 +1050,18 @@
 
                 this.container.appendChild(window);
 
+                // clicking / double-click handlers as before, plus context menu and drag/drop support
                 window.querySelectorAll('.folder-item').forEach(item => {
                     const isFolder = item.dataset.type === 'folder';
                     const name = isFolder ? item.dataset.folder : item.dataset.file;
+                    const parentPath = path;
+                    const fullPath = parentPath ? parentPath + '/' + name : name;
+
+                    // make draggable
+                    item.setAttribute('draggable', 'true');
+                    item.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', fullPath);
+                    });
 
                     item.addEventListener('dblclick', () => {
                         if (isFolder) {
@@ -943,16 +1072,134 @@
                             if (fileData.type === 'app') {
                                 this.openApplication(fileData.appType, name);
                             } else {
-                                const viewWindow = this.createWindowElement(name, fileData, path);
-                                this.container.appendChild(viewWindow);
-                                this.windows.push({ filename: name, folder: path, element: viewWindow });
-                                this.addTaskbarButton(name, { filename: name, folder: path, element: viewWindow });
-                                this.makeWindowDraggable(viewWindow);
-                                viewWindow.style.zIndex = ++this.zIndex;
+                                const content = fileData.content || '';
+                                this.openApplication('notepad', fullPath, content);
                             }
                         }
                     });
+
+                    // handle dragover/drop onto folders
+                    item.addEventListener('dragover', (e) => {
+                        if (isFolder) e.preventDefault();
+                    });
+                    item.addEventListener('drop', (e) => {
+                        if (!isFolder) return;
+                        e.preventDefault();
+                        const src = e.dataTransfer.getData('text/plain');
+                        if (!src) return;
+                        const destFolder = parentPath ? parentPath + '/' + name : name;
+                        const movingName = src.split('/').pop();
+                        const dest = destFolder + '/' + movingName;
+                        renamePath(src, dest);
+                        // refresh current view
+                        windowManager.closeWindow(windowId);
+                        const folderNode = getFolder(parentPath);
+                        windowManager.openFolderPath(parentPath, folderNode);
+                    });
+
+                    // right-click menu for rename/delete/copy
+                    item.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        const menuItems = [];
+                        if (isFolder && clipboard) {
+                            menuItems.push({ label: 'Paste', action: () => {
+                                    const name2 = clipboard.path.split('/').pop();
+                                    const dest = fullPath + '/' + name2;
+                                    copyPath(clipboard.path, dest);
+                                    windowManager.closeWindow(windowId);
+                                    const folderNode = getFolder(parentPath);
+                                    windowManager.openFolderPath(parentPath, folderNode);
+                                }
+                            });
+                        }
+                        menuItems.push({ label: 'Copy', action: () => {
+                                clipboard = { path: fullPath, type: isFolder ? 'folder' : 'file' };
+                            }
+                        });
+                        menuItems.push({ label: 'Rename', action: () => {
+                                const newName = prompt('New name:', name);
+                                if (newName && newName !== name) {
+                                    const newPath = parentPath ? parentPath + '/' + newName : newName;
+                                    renamePath(fullPath, newPath);
+                                    // refresh the view
+                                    windowManager.closeWindow(windowId);
+                                    const folderNode = getFolder(parentPath);
+                                    windowManager.openFolderPath(parentPath, folderNode);
+                                }
+                            }
+                        });
+                        menuItems.push({ label: 'Delete', action: () => {
+                                if (confirm(`Delete ${fullPath}?`)) {
+                                    deletePath(fullPath);
+                                    windowManager.closeWindow(windowId);
+                                    const folderNode = getFolder(parentPath);
+                                    windowManager.openFolderPath(parentPath, folderNode);
+                                }
+                            }
+                        });
+                        showContextMenu(e.clientX, e.clientY, menuItems);
+                    });
                 });
+
+                // drag over / drop into empty space viewer
+                const viewer = window.querySelector('.folder-viewer');
+                if (viewer) {
+                    viewer.addEventListener('dragover', (e) => { e.preventDefault(); });
+                    viewer.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const src = e.dataTransfer.getData('text/plain');
+                        if (!src) return;
+                        const movingName = src.split('/').pop();
+                        const dest = path ? path + '/' + movingName : movingName;
+                        renamePath(src, dest);
+                        windowManager.closeWindow(windowId);
+                        const folderNode = getFolder(path);
+                        windowManager.openFolderPath(path, folderNode);
+                    });
+
+                    viewer.addEventListener('contextmenu', (e) => {
+                        if (e.target.closest('.folder-item')) return; // handled above
+                        e.preventDefault();
+                        const items = [];
+                        if (clipboard) {
+                            items.push({ label: 'Paste', action: () => {
+                                    const name2 = clipboard.path.split('/').pop();
+                                    const dest = path ? path + '/' + name2 : name2;
+                                    copyPath(clipboard.path, dest);
+                                    windowManager.closeWindow(windowId);
+                                    const folderNode = getFolder(path);
+                                    windowManager.openFolderPath(path, folderNode);
+                                }
+                            });
+                        }
+                        items.push({ label: 'New Folder', action: () => {
+                                const name = prompt('Folder name:');
+                                if (name) {
+                                    const full = path ? path + '/' + name : name;
+                                    ensureFolder(full);
+                                    saveFileSystem();
+                                    windowManager.closeWindow(windowId);
+                                    const folderNode = getFolder(path);
+                                    windowManager.openFolderPath(path, folderNode);
+                                }
+                            }
+                        });
+                        items.push({ label: 'New File', action: () => {
+                                const name = prompt('File name:');
+                                if (name) {
+                                    const full = path ? path + '/' + name : name;
+                                    saveFileAtPath(full, '');
+                                    windowManager.closeWindow(windowId);
+                                    const folderNode = getFolder(path);
+                                    windowManager.openFolderPath(path, folderNode);
+                                }
+                            }
+                        });
+                        showContextMenu(e.clientX, e.clientY, items);
+                    });
+                }
+
+
 
                 const windowObj = { filename: path, folder: path, element: window };
                 this.windows.push(windowObj);
@@ -962,6 +1209,35 @@
 
                 window.querySelector('.minimize-btn').addEventListener('click', () => this.minimizeWindow(windowId));
                 window.querySelector('.close-btn').addEventListener('click', () => this.closeWindow(windowId));
+
+                // new folder/file buttons
+                const newFolderBtn = window.querySelector('.new-folder-btn');
+                if (newFolderBtn) {
+                    newFolderBtn.addEventListener('click', () => {
+                        const name = prompt('Folder name:');
+                        if (name) {
+                            const f = ensureFolder(path + '/' + name);
+                            saveFileSystem();
+                            // refresh window
+                            this.closeWindow(windowId);
+                            const folderNode = getFolder(path);
+                            this.openFolderPath(path, folderNode);
+                        }
+                    });
+                }
+                const newFileBtn = window.querySelector('.new-file-btn');
+                if (newFileBtn) {
+                    newFileBtn.addEventListener('click', () => {
+                        const name = prompt('File name:');
+                        if (name) {
+                            const full = path ? path + '/' + name : name;
+                            saveFileAtPath(full, '');
+                            this.closeWindow(windowId);
+                            const folderNode = getFolder(path);
+                            this.openFolderPath(path, folderNode);
+                        }
+                    });
+                }
             }
 
             makeWindowDraggable(windowElement) {
@@ -1045,27 +1321,19 @@
         // ============= INITIALIZATION =============
         const windowManager = new WindowManager();
 
-        // Auto-open welcome notepad on page load
+        // Auto-open welcome notepad on page load with specific content
         setTimeout(() => {
-            windowManager.openApplication('notepad', 'Welcome.txt');
-            
-            // Position the window to the left-middle and set content
-            const windows = document.querySelectorAll('.window');
-            if (windows.length > 0) {
-                const lastWindow = windows[windows.length - 1];
-                lastWindow.style.left = 'calc(50% - 400px)';
-                lastWindow.style.top = '50%';
-                lastWindow.style.transform = 'translateY(-50%)';
-                
-                // Set the notepad content
-                const textarea = lastWindow.querySelector('.notepad-textarea');
-                if (textarea) {
-                    textarea.value = `Welcome
+            const welcomeText = `Welcome
 
 welcome to misdorvevo.com. here i am developing some tools to assist indepedent artsits manage their career. feel free to click around my computer and try things out.
 
 vv`;
-                }
+            const win = windowManager.openApplication('notepad', 'Welcome.txt', welcomeText);
+            if (win) {
+                // position the window nicely after opening
+                win.style.left = 'calc(50% - 400px)';
+                win.style.top = '50%';
+                win.style.transform = 'translateY(-50%)';
             }
         }, 100);
 
@@ -1073,11 +1341,81 @@ vv`;
         const desktopIcons = document.querySelectorAll('.desktop-icon');
         const desktopContainer = document.querySelector('.desktop-icons');
         
+        // track persisted desktop icon coordinates
+        let desktopPositions = JSON.parse(localStorage.getItem('desktopPositions') || '{}');
+
+        // right-click on empty desktop for quick new file/folder
+        desktopContainer.addEventListener('contextmenu', (e) => {
+            if (e.target.closest('.desktop-icon')) return;
+            e.preventDefault();
+            const items = [];
+            if (clipboard) {
+                items.push({ label: 'Paste', action: () => {
+                        const name = clipboard.path.split('/').pop();
+                        const dest = name;
+                        if (clipboard.type === 'file' || clipboard.type === 'folder') {
+                            if (clipboard.type === 'file') {
+                                copyPath(clipboard.path, dest);
+                            } else {
+                                copyPath(clipboard.path, dest);
+                            }
+                            location.reload();
+                        }
+                    }
+                });
+            }
+            items.push({ label: 'New Folder', action: () => {
+                        const name = prompt('Folder name:');
+                        if (name) {
+                            ensureFolder(name);
+                            saveFileSystem();
+                            location.reload();
+                        }
+                    }
+                });
+            items.push({ label: 'New File', action: () => {
+                        const name = prompt('File name:');
+                        if (name) {
+                            saveFileAtPath(name, '');
+                            location.reload();
+                        }
+                    }
+                });
+            showContextMenu(e.clientX, e.clientY, items);
+        });
+
+        // initialize positions and make absolute
+        desktopIcons.forEach(icon => {
+            const key = icon.dataset.file;
+            icon.style.position = 'absolute';
+            if (desktopPositions[key]) {
+                icon.style.left = desktopPositions[key].x + 'px';
+                icon.style.top = desktopPositions[key].y + 'px';
+            } else {
+                // compute current offset within container
+                const rect = icon.getBoundingClientRect();
+                const contRect = desktopContainer.getBoundingClientRect();
+                const x = rect.left - contRect.left;
+                const y = rect.top - contRect.top;
+                desktopPositions[key] = {x,y};
+                icon.style.left = x + 'px';
+                icon.style.top = y + 'px';
+            }
+        });
+        // persist initial layout
+        localStorage.setItem('desktopPositions', JSON.stringify(desktopPositions));
+
         let draggedIcon = null;
         let dragStartX = 0;
         let dragStartY = 0;
 
         desktopIcons.forEach(icon => {
+            // HTML5 drag support so items can be moved into folders
+            icon.setAttribute('draggable', 'true');
+            icon.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', icon.dataset.file);
+            });
+
             icon.addEventListener('mousedown', (e) => {
                 if (e.button !== 0) return;
                 draggedIcon = icon;
@@ -1104,17 +1442,100 @@ vv`;
                     icon.classList.toggle('selected');
                 }
             });
+
+            icon.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const name = icon.dataset.file;
+                const isFolder = !!fileSystem.folders[name];
+                showContextMenu(e.clientX, e.clientY, [
+                    { label: 'Copy', action: () => {
+                            clipboard = { path: name, type: isFolder ? 'folder' : 'file' };
+                        }
+                    },
+                    { label: 'Rename', action: () => {
+                            const newName = prompt('New name:', name);
+                            if (newName && newName !== name) {
+                                // preserve desktop coordinates
+                                if (desktopPositions[name]) {
+                                    desktopPositions[newName] = desktopPositions[name];
+                                    delete desktopPositions[name];
+                                    localStorage.setItem('desktopPositions', JSON.stringify(desktopPositions));
+                                }
+                                renamePath(name, newName);
+                                location.reload();
+                            }
+                        }
+                    },
+                    { label: 'Delete', action: () => {
+                            if (confirm(`Delete ${name}?`)) {
+                                if (desktopPositions[name]) {
+                                    delete desktopPositions[name];
+                                    localStorage.setItem('desktopPositions', JSON.stringify(desktopPositions));
+                                }
+                                deletePath(name);
+                                location.reload();
+                            }
+                        }
+                    }
+                ]);
+            });
         });
+
+        // helpers for showing/hiding the right-click menu
+        function showContextMenu(x, y, items) {
+            const menu = document.getElementById('context-menu');
+            if (!menu) return;
+            menu.innerHTML = '';
+            items.forEach(i => {
+                const el = document.createElement('div');
+                el.textContent = i.label;
+                el.addEventListener('click', () => {
+                    i.action();
+                    hideContextMenu();
+                });
+                menu.appendChild(el);
+            });
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.style.display = 'block';
+        }
+        function hideContextMenu() {
+            const menu = document.getElementById('context-menu');
+            if (menu) menu.style.display = 'none';
+        }
+        document.addEventListener('click', hideContextMenu);
 
         document.addEventListener('mousemove', (e) => {
             if (draggedIcon) {
-                draggedIcon.style.left = (e.clientX - dragStartX) + 'px';
-                draggedIcon.style.top = (e.clientY - dragStartY) + 'px';
+                const x = e.clientX - dragStartX;
+                const y = e.clientY - dragStartY;
+                draggedIcon.style.left = x + 'px';
+                draggedIcon.style.top = y + 'px';
             }
+        });
+
+        // allow dropping into desktop container (moves item to root)
+        desktopContainer.addEventListener('dragover', (e) => { e.preventDefault(); });
+        desktopContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const src = e.dataTransfer.getData('text/plain');
+            if (!src) return;
+            const name = src.split('/').pop();
+            const dest = name; // root
+            renamePath(src, dest);
+            location.reload();
         });
 
         document.addEventListener('mouseup', () => {
             if (draggedIcon) {
+                // persist position
+                const key = draggedIcon.dataset.file;
+                desktopPositions[key] = {
+                    x: parseInt(draggedIcon.style.left,10) || 0,
+                    y: parseInt(draggedIcon.style.top,10) || 0
+                };
+                localStorage.setItem('desktopPositions', JSON.stringify(desktopPositions));
+
                 draggedIcon.classList.remove('dragging');
                 draggedIcon = null;
             }
@@ -1143,5 +1564,8 @@ vv`;
         updateTime();
         setInterval(updateTime, 1000);
     </script>
+    <!-- right-click context menu -->
+    <div id="context-menu" class="context-menu"></div>
+
 </body>
 </html>
