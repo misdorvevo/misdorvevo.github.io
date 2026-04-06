@@ -23,6 +23,12 @@
                 <option value="EDM">EDM</option>
                 <option value="Rock">Rock</option>
             </select>
+            <label for="timeframe-select">Timeframe:</label>
+            <select id="timeframe-select">
+                <option value="0.7">Accelerated (70% time)</option>
+                <option value="1" selected>Standard</option>
+                <option value="1.3">Extended (130% time)</option>
+            </select>
         </div>
         <form id="planner-form">
             <label for="release-date">Target Release Date:</label>
@@ -97,10 +103,11 @@
 
         let calendar;
 
-        function renderCalendar(releaseDate) {
+        function renderCalendar(releaseDate, multiplier = 1) {
             const events = milestones.map(milestone => {
+                const days = Math.round(milestone.daysBefore * multiplier);
                 const eventDate = new Date(releaseDate);
-                eventDate.setDate(releaseDate.getDate() - milestone.daysBefore);
+                eventDate.setDate(releaseDate.getDate() - days);
                 return {
                     title: milestone.task,
                     start: eventDate.toISOString().split('T')[0],
@@ -188,26 +195,30 @@
         document.getElementById('planner-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const releaseDate = new Date(document.getElementById('release-date').value);
+            const multiplier = parseFloat(document.getElementById('timeframe-select').value);
             const timelineEl = document.getElementById('timeline');
             timelineEl.innerHTML = '';
             milestones.forEach(milestone => {
+                const days = Math.round(milestone.daysBefore * multiplier);
                 const milestoneDate = new Date(releaseDate);
-                milestoneDate.setDate(releaseDate.getDate() - milestone.daysBefore);
+                milestoneDate.setDate(releaseDate.getDate() - days);
                 const li = document.createElement('li');
                 li.innerHTML = `<strong>${milestoneDate.toDateString()}</strong>: ${milestone.task}`;
                 timelineEl.appendChild(li);
             });
             document.getElementById('plan-output').style.display = 'block';
             renderMilestoneList();
-            renderCalendar(releaseDate);
+            renderCalendar(releaseDate, multiplier);
         });
 
         document.getElementById('export-btn').addEventListener('click', function() {
             const releaseDate = new Date(document.getElementById('release-date').value);
+            const multiplier = parseFloat(document.getElementById('timeframe-select').value);
             let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Indie Planner//EN\n`;
             milestones.forEach(milestone => {
+                const days = Math.round(milestone.daysBefore * multiplier);
                 const eventDate = new Date(releaseDate);
-                eventDate.setDate(releaseDate.getDate() - milestone.daysBefore);
+                eventDate.setDate(releaseDate.getDate() - days);
                 const dateStr = eventDate.toISOString().slice(0,10).replace(/-/g,'');
                 icsContent += `BEGIN:VEVENT\nSUMMARY:${milestone.task}\nDTSTART;VALUE=DATE:${dateStr}\nDTEND;VALUE=DATE:${dateStr}\nEND:VEVENT\n`;
             });
