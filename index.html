@@ -332,8 +332,10 @@
             extraMilestones.push({ daysBefore: -30, task: "Release performance review and analytics analysis" });
 
             // Combine and apply timeframe
-            let milestones = [...baseMilestones, ...extraMilestones];
+            milestones = [...baseMilestones, ...extraMilestones];
             milestones.forEach(m => m.daysBefore = Math.round(m.daysBefore * timeframe));
+
+            saveMilestones();
 
             // Generate plan
             const timelineEl = document.getElementById('timeline');
