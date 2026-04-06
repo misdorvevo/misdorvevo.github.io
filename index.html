@@ -12,8 +12,15 @@
     <header>
         <h1>Indie Release Schedule Planner</h1>
         <p>Plan your music release timeline backwards from your target release date.</p>
+        <p style="font-size: 14px; color: #666;">Based on real indie artist timelines from sources like DistroKid, Music Gateway, and industry best practices for self-production.</p>
     </header>
     <main>
+        <div id="ai-section">
+            <h2>AI-Powered Plan Suggestions</h2>
+            <p>Describe your album or project, and get a customized plan!</p>
+            <textarea id="ai-prompt" placeholder="E.g., 'A hip-hop album with heavy production, aiming for a quick release in 3 months'"></textarea>
+            <button id="generate-ai-btn">Generate AI Plan</button>
+        </div>
         <div id="template-section">
             <label for="template-select">Choose a Template:</label>
             <select id="template-select">
@@ -22,6 +29,7 @@
                 <option value="Pop">Pop</option>
                 <option value="EDM">EDM</option>
                 <option value="Rock">Rock</option>
+                <option value="Self-Produced">Self-Produced</option>
             </select>
             <label for="timeframe-select">Timeframe:</label>
             <select id="timeframe-select">
@@ -98,6 +106,17 @@
                 { daysBefore: 105, task: "Recording complete, rough mixes done" },
                 { daysBefore: 135, task: "Songwriting complete, demos ready" },
                 { daysBefore: 195, task: "Planning and pre-production started" }
+            ],
+            'Self-Produced': [
+                { daysBefore: 0, task: "Release Day: Upload to distributors, go live!" },
+                { daysBefore: 7, task: "Pre-save links go live, final quality checks" },
+                { daysBefore: 14, task: "Marketing campaign launch, social media teasers" },
+                { daysBefore: 30, task: "Mastering complete (DIY or online service), artwork finalized" },
+                { daysBefore: 60, task: "Mixing complete (self-taught or software), video production finished" },
+                { daysBefore: 90, task: "Recording complete (home studio), rough mixes done" },
+                { daysBefore: 120, task: "Songwriting complete, demos ready" },
+                { daysBefore: 150, task: "Learn production tools/software, equipment setup" },
+                { daysBefore: 180, task: "Planning and pre-production started" }
             ]
         };
 
@@ -232,10 +251,60 @@
             URL.revokeObjectURL(url);
         });
 
-        document.getElementById('add-milestone').addEventListener('click', addMilestone);
+        document.getElementById('generate-ai-btn').addEventListener('click', function() {
+            const prompt = document.getElementById('ai-prompt').value.toLowerCase();
+            let template = 'General';
+            let timeframe = 1;
+            let extraMilestones = [];
 
-        // Initialize
-        renderMilestoneList();
+            // Detect genre
+            if (prompt.includes('hip-hop') || prompt.includes('rap') || prompt.includes('beats')) {
+                template = 'Hip-Hop';
+            } else if (prompt.includes('pop')) {
+                template = 'Pop';
+            } else if (prompt.includes('edm') || prompt.includes('electronic') || prompt.includes('dance')) {
+                template = 'EDM';
+            } else if (prompt.includes('rock')) {
+                template = 'Rock';
+            } else if (prompt.includes('self') || prompt.includes('diy') || prompt.includes('home')) {
+                template = 'Self-Produced';
+            }
+
+            // Detect timeframe
+            if (prompt.includes('fast') || prompt.includes('quick') || prompt.includes('rush')) {
+                timeframe = 0.7;
+            } else if (prompt.includes('slow') || prompt.includes('extended') || prompt.includes('careful')) {
+                timeframe = 1.3;
+            }
+
+            // Add extras
+            if (prompt.includes('complex') || prompt.includes('production heavy') || prompt.includes('multiple artists')) {
+                extraMilestones.push({ daysBefore: 200, task: "Collaborator coordination and revisions" });
+            }
+            if (prompt.includes('video') || prompt.includes('visuals')) {
+                extraMilestones.push({ daysBefore: 70, task: "Video concept and storyboard finalized" });
+            }
+            if (prompt.includes('marketing') || prompt.includes('promotion')) {
+                extraMilestones.push({ daysBefore: 40, task: "Marketing strategy and partnerships secured" });
+            }
+
+            // Load template
+            loadTemplate(template);
+            document.getElementById('timeframe-select').value = timeframe;
+
+            // Add extras
+            milestones.push(...extraMilestones);
+            saveMilestones();
+            renderMilestoneList();
+
+            // Auto generate if date is set
+            const dateInput = document.getElementById('release-date');
+            if (dateInput.value) {
+                document.getElementById('planner-form').dispatchEvent(new Event('submit'));
+            } else {
+                alert('AI plan generated! Set a release date and click Generate Plan.');
+            }
+        });
     </script>
 </body>
 </html>
