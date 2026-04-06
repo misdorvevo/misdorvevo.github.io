@@ -29,7 +29,15 @@
             <h2>Your Release Plan</h2>
             <ul id="timeline"></ul>
             <div id='calendar'></div>
-            <button id="export-btn">Export to Calendar</button>
+            <button id="export-btn">📅 Export to Google/Apple Calendar (.ics)</button>
+            <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                <p>Download the .ics file and import it into your calendar app:</p>
+                <ul style="margin: 5px 0; padding-left: 20px;">
+                    <li><strong>Google Calendar:</strong> Settings → Import & Export → Import</li>
+                    <li><strong>Apple Calendar:</strong> Double-click the .ics file</li>
+                    <li><strong>Outlook:</strong> File → Open & Export → Import/Export → Import an iCalendar file</li>
+                </ul>
+            </div>
             <div id="customize-section">
                 <h3>Customize Milestones</h3>
                 <ul id="milestone-list"></ul>
@@ -354,21 +362,39 @@
 
         document.getElementById('export-btn').addEventListener('click', function() {
             const releaseDate = new Date(document.getElementById('release-date').value);
-            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Indie Planner//EN\n`;
-            milestones.forEach(milestone => {
+            const prompt = document.getElementById('ai-prompt').value || 'Indie Release Plan';
+            
+            let icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Indie Release Schedule Planner//EN\nCALSCALE:GREGORIAN\n`;
+            icsContent += `X-WR-CALNAME:Indie Release Plan\nX-WR-TIMEZONE:UTC\n`;
+            
+            milestones.forEach((milestone, index) => {
                 const eventDate = new Date(releaseDate);
                 eventDate.setDate(releaseDate.getDate() - milestone.daysBefore);
                 const dateStr = eventDate.toISOString().slice(0,10).replace(/-/g,'');
-                icsContent += `BEGIN:VEVENT\nSUMMARY:${milestone.task}\nDTSTART;VALUE=DATE:${dateStr}\nDTEND;VALUE=DATE:${dateStr}\nEND:VEVENT\n`;
+                const uid = `release-plan-${index}@indie-planner-${Date.now()}`;
+                
+                icsContent += `BEGIN:VEVENT\n`;
+                icsContent += `UID:${uid}\n`;
+                icsContent += `DTSTART;VALUE=DATE:${dateStr}\n`;
+                icsContent += `DTEND;VALUE=DATE:${dateStr}\n`;
+                icsContent += `SUMMARY:${milestone.task}\n`;
+                icsContent += `DESCRIPTION:Part of your indie release plan generated from: ${prompt}\n`;
+                icsContent += `STATUS:CONFIRMED\n`;
+                icsContent += `END:VEVENT\n`;
             });
+            
             icsContent += `END:VCALENDAR`;
-            const blob = new Blob([icsContent], {type: 'text/calendar'});
+            
+            const blob = new Blob([icsContent], {type: 'text/calendar;charset=utf-8'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'release-plan.ics';
+            a.download = 'indie-release-plan.ics';
             a.click();
             URL.revokeObjectURL(url);
+            
+            // Show success message
+            alert('Calendar file downloaded! To import:\n\nGoogle Calendar: Go to calendar.google.com → Settings → Import & Export → Import\nApple Calendar: Double-click the .ics file or drag it into Calendar app');
         });
 
         document.getElementById('generate-ai-btn').addEventListener('click', function() {
