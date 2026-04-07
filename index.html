@@ -3,80 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Indie Release Schedule Planner</title>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <title>Release Planner — Music Timeline Tool</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
 </head>
 <body>
-    <header>
-        <h1>Indie Release Schedule Planner</h1>
-        <p>Plan your music release timeline backwards from your target release date.</p>
-        <p style="font-size: 14px; color: #666;">Based on real indie artist timelines from sources like DistroKid, Music Gateway, and industry best practices for self-production.</p>
+    <header class="site-header">
+        <div class="header-content">
+            <div class="header-intro">
+                <h1>Release Planner</h1>
+                <p class="tagline">Plan your music release timeline backwards from your target date</p>
+            </div>
+            <p class="header-note">Based on industry timelines from DistroKid, Music Gateway, and self-production best practices.</p>
+        </div>
     </header>
-    <main>
-        <div id="instructions">
-            <h3>How to Get the Best Results</h3>
-            <p><strong>Describe your project:</strong> Be specific about your music style, production approach, and any special elements (e.g., "self-produced hip-hop with heavy beats and video"). Mention complexity, marketing needs, or unique aspects.</p>
-            <p><strong>Use the fields below:</strong> Fill in song name, genre, and timeframe for more accurate planning. The AI prompt can add extra details.</p>
-            <p><strong>Examples:</strong> "A pop single with music video and social media campaign" or "Rock album with live shows and merch"</p>
-        </div>
-        <div id="ai-section">
-            <h2>AI-Powered Release Planner</h2>
-            <p>Describe your album or project, and AI will generate a customized timeline!</p>
-            <textarea id="ai-prompt" placeholder="E.g., 'A self-produced hip-hop album with heavy production, aiming for a quick release in 3 months'"></textarea>
-        </div>
-        <form id="planner-form">
-            <div class="form-row">
-                <label for="song-name">Song/Album Name:</label>
-                <input type="text" id="song-name" placeholder="Enter song or album name">
+
+    <main class="main-container">
+        <section class="instructions-section">
+            <div class="card-light">
+                <h2>Getting Started</h2>
+                <div class="instructions-grid">
+                    <div class="instruction-item">
+                        <h3>Describe Your Project</h3>
+                        <p>Be specific about your music style, production approach, and any special elements. Include complexity, marketing needs, or unique aspects.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <h3>Use the Fields Below</h3>
+                        <p>Fill in your song name, genre, and timeframe for more accurate AI planning. The AI prompt can add even more specifics.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <h3>Pro Tips</h3>
+                        <p>"A pop single with music video and social media campaign" or "Rock album with live shows and merch" work great.</p>
+                    </div>
+                </div>
             </div>
-            <div class="form-row">
-                <label for="genre">Genre:</label>
-                <select id="genre">
-                    <option value="General">General</option>
-                    <option value="Hip-Hop">Hip-Hop/Rap</option>
-                    <option value="Pop">Pop</option>
-                    <option value="EDM">EDM/Electronic</option>
-                    <option value="Rock">Rock</option>
-                    <option value="Self-Produced">Self-Produced/DIY</option>
-                </select>
+        </section>
+
+        <section class="ai-section">
+            <div class="card-light">
+                <h2>AI-Powered Timeline</h2>
+                <p class="section-description">Tell us about your music project and we'll generate a customized release timeline.</p>
+                <textarea id="ai-prompt" class="ai-textarea" placeholder="E.g., 'A self-produced hip-hop album with heavy production, aiming for a quick release in 3 months'"></textarea>
             </div>
-            <div class="form-row">
-                <label for="timeframe">Timeframe:</label>
-                <select id="timeframe">
-                    <option value="3">3 Months</option>
-                    <option value="6">6 Months</option>
-                    <option value="12">1 Year</option>
-                    <option value="custom">Custom (specify in prompt)</option>
-                </select>
+        </section>
+
+        <form id="planner-form" class="release-form">
+            <div class="card-light">
+                <h2>Project Details</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="song-name">Song/Album Name</label>
+                        <input type="text" id="song-name" placeholder="Enter title">
+                    </div>
+                    <div class="form-group">
+                        <label for="genre">Genre</label>
+                        <select id="genre">
+                            <option value="General">General</option>
+                            <option value="Hip-Hop">Hip-Hop/Rap</option>
+                            <option value="Pop">Pop</option>
+                            <option value="EDM">EDM/Electronic</option>
+                            <option value="Rock">Rock</option>
+                            <option value="Self-Produced">Self-Produced/DIY</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeframe">Timeframe</label>
+                        <select id="timeframe">
+                            <option value="3">3 Months</option>
+                            <option value="6">6 Months</option>
+                            <option value="12">1 Year</option>
+                            <option value="custom">Custom (specify in prompt)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="release-date">Target Release Date</label>
+                        <input type="date" id="release-date" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Generate Timeline</button>
             </div>
-            <div class="form-row">
-                <label for="release-date">Target Release Date:</label>
-                <input type="date" id="release-date" required>
-            </div>
-            <button type="submit">Generate AI Plan</button>
         </form>
-        <div id="plan-output" style="display: none;">
-            <h2>Your Release Plan</h2>
-            <ul id="timeline"></ul>
-            <div id='calendar'></div>
-            <button id="export-btn">📅 Export to Google/Apple Calendar (.ics)</button>
-            <div style="font-size: 12px; color: #666; margin-top: 5px;">
-                <p>Download the .ics file and import it into your calendar app:</p>
-                <ul style="margin: 5px 0; padding-left: 20px;">
-                    <li><strong>Google Calendar:</strong> Settings → Import & Export → Import</li>
-                    <li><strong>Apple Calendar:</strong> Double-click the .ics file</li>
-                    <li><strong>Outlook:</strong> File → Open & Export → Import/Export → Import an iCalendar file</li>
-                </ul>
+        <section id="plan-output" class="plan-output-section" style="display: none;">
+            <div class="card-light">
+                <h2>Your Release Timeline</h2>
+                <ul id="timeline" class="timeline-list"></ul>
             </div>
-            <div id="customize-section">
-                <h3>Customize Milestones</h3>
-                <ul id="milestone-list"></ul>
-                <button id="add-milestone">Add Milestone</button>
+            
+            <div class="card-light">
+                <h3>Calendar View</h3>
+                <div id='calendar' class="calendar-container"></div>
             </div>
-        </div>
+            
+            <div class="card-light">
+                <h3>Export & Customize</h3>
+                <button id="export-btn" class="btn btn-secondary">📅 Export to Calendar (.ics)</button>
+                <div class="export-help">
+                    <p><strong>Import to your calendar:</strong></p>
+                    <ul>
+                        <li><strong>Google Calendar:</strong> Settings → Import & Export → Import</li>
+                        <li><strong>Apple Calendar:</strong> Double-click the .ics file</li>
+                        <li><strong>Outlook:</strong> File → Open & Export → Import</li>
+                    </ul>
+                </div>
+                
+                <div id="customize-section" class="customize-milestones">
+                    <h4>Customize Milestones</h4>
+                    <ul id="milestone-list" class="milestone-list"></ul>
+                    <button id="add-milestone" class="btn btn-tertiary">+ Add Milestone</button>
+                </div>
+            </div>
+        </section>
     </main>
     <script>
         const templates = {
