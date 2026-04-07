@@ -384,9 +384,20 @@
             extraMilestones.push({ daysBefore: -14, task: "Follow-up single or B-side planning" });
             extraMilestones.push({ daysBefore: -30, task: "Release performance review and analytics analysis" });
 
-            // Combine and apply timeframe
+            // Combine milestones
             milestones = [...baseMilestones, ...extraMilestones];
-            milestones.forEach(m => m.daysBefore = Math.round(m.daysBefore * timeframe));
+
+            // Apply timeframe by redistributing proportionally to maintain spacing
+            const maxDaysBefore = Math.max(...milestones.map(m => m.daysBefore).filter(d => d > 0));
+            const newMaxDays = Math.round(maxDaysBefore * timeframe);
+            milestones.forEach(m => {
+                if (m.daysBefore > 0) {
+                    m.daysBefore = Math.round((m.daysBefore / maxDaysBefore) * newMaxDays);
+                } else {
+                    // Keep post-release tasks as is, or scale them too if needed
+                    m.daysBefore = Math.round(m.daysBefore * timeframe);
+                }
+            });
 
             saveMilestones();
 
