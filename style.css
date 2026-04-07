@@ -3,15 +3,15 @@
    ======================================== */
 :root {
     --color-primary: #1a1a1a;
-    --color-secondary: #686868;
+    --color-secondary: #1a1a1a;
     --color-accent: #d4336d;
     --color-accent-light: #e85a8a;
     --color-bg: #ffffff;
-    --color-bg-secondary: #f8f8f8;
-    --color-bg-tertiary: #efefef;
-    --color-border: #e5e5e5;
+    --color-bg-secondary: #f9f9f9;
+    --color-bg-tertiary: #f0f0f0;
+    --color-border: #e8e8e8;
     --color-text: #1a1a1a;
-    --color-text-secondary: #686868;
+    --color-text-secondary: #2d2d2d;
     
     --spacing-xs: 8px;
     --spacing-sm: 12px;
@@ -84,6 +84,14 @@ h2 {
     font-size: var(--font-size-2xl);
     color: var(--color-primary);
     margin-bottom: var(--spacing-lg);
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    position: relative;
+    padding-bottom: var(--spacing-lg);
+}
+
+.card-light h2 {
+    font-size: 32px;
 }
 
 h3 {
@@ -101,6 +109,7 @@ p {
     margin-bottom: var(--spacing-md);
     color: var(--color-text-secondary);
     line-height: 1.7;
+    font-weight: 500;
 }
 
 a {
@@ -123,10 +132,21 @@ a:hover {
 }
 
 .site-header {
-    background: linear-gradient(135deg, #f8f8f8 0%, #ffffff 100%);
-    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
+    border-bottom: 2px solid var(--color-text);
     padding: var(--spacing-2xl) var(--spacing-xl);
     margin-bottom: var(--spacing-2xl);
+    position: relative;
+}
+
+.site-header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, var(--color-accent) 0%, transparent 30%, transparent 70%, var(--color-accent) 100%);
 }
 
 .header-content {
@@ -136,19 +156,25 @@ a:hover {
 
 .header-intro h1 {
     margin-bottom: var(--spacing-md);
+    font-weight: 700;
+    font-size: 48px;
+    letter-spacing: -1px;
 }
 
 .tagline {
     font-size: var(--font-size-lg);
-    color: var(--color-secondary);
+    color: var(--color-text);
     margin-bottom: var(--spacing-lg);
     max-width: 600px;
+    font-weight: 500;
+    line-height: 1.5;
 }
 
 .header-note {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    opacity: 0.8;
+    opacity: 0.9;
+    font-weight: 500;
 }
 
 /* ========================================
@@ -177,6 +203,8 @@ section {
     font-size: var(--font-size-lg);
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-lg);
+    font-weight: 500;
+    line-height: 1.6;
 }
 
 /* ========================================
@@ -191,17 +219,48 @@ section {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--spacing-lg);
     margin-top: var(--spacing-lg);
+    counter-reset: instruction-counter;
+}
+
+.instruction-item {
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0) 0%, rgba(212, 51, 109, 0.02) 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    transition: var(--transition);
+    position: relative;
+    counter-increment: instruction-counter;
+}
+
+.instruction-item::before {
+    content: counter(instruction-counter);
+    position: absolute;
+    top: var(--spacing-md);
+    right: var(--spacing-lg);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--color-accent);
+    opacity: 0.3;
+    font-family: var(--font-display);
 }
 
 .instruction-item h3 {
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-md);
     color: var(--color-accent);
+    font-weight: 700;
 }
 
 .instruction-item p {
     font-size: var(--font-size-sm);
     line-height: 1.8;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.instruction-item:hover {
+    border-color: var(--color-accent);
+    box-shadow: var(--shadow-sm);
 }
 
 /* ========================================
@@ -257,12 +316,13 @@ section {
 }
 
 .form-group label {
-    font-weight: 600;
+    font-weight: 700;
     font-size: var(--font-size-sm);
     color: var(--color-primary);
     margin-bottom: var(--spacing-sm);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    display: block;
 }
 
 .form-group input,
@@ -276,6 +336,7 @@ section {
     color: var(--color-text);
     background: var(--color-bg);
     transition: var(--transition);
+    font-weight: 500;
 }
 
 .form-group input:focus,
@@ -374,6 +435,9 @@ button[type="submit"] {
     border-radius: var(--radius-md);
     transition: var(--transition);
     cursor: pointer;
+    color: var(--color-text);
+    font-weight: 500;
+    line-height: 1.7;
 }
 
 .timeline-list li:hover {
@@ -385,7 +449,7 @@ button[type="submit"] {
 
 .timeline-list strong {
     color: var(--color-accent);
-    font-weight: 600;
+    font-weight: 700;
 }
 
 /* ========================================
