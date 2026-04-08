@@ -173,7 +173,6 @@ a:hover {
 .header-note {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    opacity: 0.9;
     font-weight: 500;
 }
 
