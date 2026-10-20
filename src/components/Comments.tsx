@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import Avatar from '@/components/Avatar';
+import { getProfile, type Profile } from '@/lib/profile';
 import {
   MAX_COMMENT_LENGTH,
   addComment,
@@ -13,6 +15,27 @@ import {
   timeAgo,
   type Comment,
 } from '@/lib/social';
+
+const profileCache = new Map<string, Promise<Profile | null>>();
+
+function useAuthorProfile(uid: string) {
+  const [loaded, setLoaded] = useState<{ uid: string; profile: Profile | null } | null>(null);
+  useEffect(() => {
+    let active = true;
+    let request = profileCache.get(uid);
+    if (!request) {
+      request = getProfile(uid).catch(() => null);
+      profileCache.set(uid, request);
+    }
+    request.then((profile) => {
+      if (active) setLoaded({ uid, profile });
+    });
+    return () => {
+      active = false;
+    };
+  }, [uid]);
+  return loaded?.uid === uid ? loaded.profile : null;
+}
 
 function CommentForm({
   placeholder,
@@ -88,14 +111,16 @@ function CommentItem({
   onDelete: (comment: Comment) => void;
 }) {
   const liked = !!user && comment.likes.includes(user.uid);
+  const profile = useAuthorProfile(comment.authorUid);
+  const name = profile?.displayName || comment.authorName;
   return (
     <div className="flex gap-3">
-      <div className="flex-shrink-0 w-9 h-9 rounded-full bg-brand-500 text-black font-bold flex items-center justify-center text-sm">
-        {comment.authorName.charAt(0).toUpperCase()}
-      </div>
+      <Link href={`/users/${comment.authorUid}`} className="flex-shrink-0">
+        <Avatar name={name} photoURL={profile?.photoURL} size={36} />
+      </Link>
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="font-semibold text-white">{comment.authorName}</span>
+          <Link href={`/users/${comment.authorUid}`} className="font-semibold text-white hover:text-brand-400">{name}</Link>
           <span className="text-xs text-gray-500">{timeAgo(comment.createdAt)}</span>
         </div>
         <p className="text-gray-300 whitespace-pre-wrap break-words">{comment.text}</p>
