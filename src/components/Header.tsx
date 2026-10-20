@@ -35,7 +35,6 @@ export default function Header() {
   const navLinks = [
     { href: '/browse', label: 'Browse' },
     { href: '/packs', label: 'Packs' },
-    { href: '/journey-map', label: 'Journey Map' },
     ...(user ? [{ href: '/liked-packs', label: 'Liked Packs' }] : []),
     { href: '/upload', label: 'Upload' },
   ];
