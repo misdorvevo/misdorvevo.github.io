@@ -2,7 +2,7 @@
 
 export default function AccountSettings() {
   return (
-    <main className="flex-1 py-12 px-6 bg-black">
+    <main className="flex-1 py-12 px-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-white mb-8">Account Settings</h1>
         <div className="bg-gray-900 rounded-2xl p-8 border border-gray-800">

@@ -54,7 +54,7 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
           value
-            ? 'bg-orange-500/20 border-orange-500 text-orange-400'
+            ? 'bg-brand-500/20 border-brand-500 text-brand-400'
             : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
         }`}
       >
@@ -68,7 +68,7 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
           <button
             onClick={() => { onChange(''); setOpen(false); }}
             className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-              !value ? 'text-orange-400 bg-gray-800' : 'text-gray-300 hover:bg-gray-800'
+              !value ? 'text-brand-400 bg-gray-800' : 'text-gray-300 hover:bg-gray-800'
             }`}
           >
             All {label}s
@@ -78,7 +78,7 @@ function FilterDropdown({ label, value, options, onChange }: FilterDropdownProps
               key={opt}
               onClick={() => { onChange(opt); setOpen(false); }}
               className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                value === opt ? 'text-orange-400 bg-gray-800' : 'text-gray-300 hover:bg-gray-800'
+                value === opt ? 'text-brand-400 bg-gray-800' : 'text-gray-300 hover:bg-gray-800'
               }`}
             >
               {opt}
@@ -124,7 +124,7 @@ function BpmFilter({ bpmMode, bpmMin, bpmMax, bpmExact, onChange }: BpmFilterPro
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${
           active
-            ? 'bg-orange-500/20 border-orange-500 text-orange-400'
+            ? 'bg-brand-500/20 border-brand-500 text-brand-400'
             : 'bg-gray-800 border-gray-700 text-gray-300 hover:border-gray-600'
         }`}
       >
@@ -143,7 +143,7 @@ function BpmFilter({ bpmMode, bpmMin, bpmMax, bpmExact, onChange }: BpmFilterPro
                 onClick={() => onChange({ bpmMode: mode })}
                 className={`flex-1 py-1.5 text-xs font-semibold transition-colors ${
                   bpmMode === mode
-                    ? 'bg-orange-500 text-white'
+                    ? 'bg-brand-500 text-black'
                     : 'bg-gray-800 text-gray-400 hover:text-gray-200'
                 }`}
               >
@@ -168,7 +168,7 @@ function BpmFilter({ bpmMode, bpmMin, bpmMax, bpmExact, onChange }: BpmFilterPro
                     const v = Number(e.target.value);
                     onChange({ bpmMin: Math.min(v, bpmMax - 1) });
                   }}
-                  className="w-full accent-orange-500 h-1.5"
+                  className="w-full accent-brand-500 h-1.5"
                 />
                 <input
                   type="range"
@@ -179,7 +179,7 @@ function BpmFilter({ bpmMode, bpmMin, bpmMax, bpmExact, onChange }: BpmFilterPro
                     const v = Number(e.target.value);
                     onChange({ bpmMax: Math.max(v, bpmMin + 1) });
                   }}
-                  className="w-full accent-orange-500 h-1.5"
+                  className="w-full accent-brand-500 h-1.5"
                 />
               </div>
             </div>
@@ -194,7 +194,7 @@ function BpmFilter({ bpmMode, bpmMin, bpmMax, bpmExact, onChange }: BpmFilterPro
                   max={300}
                   value={bpmExact}
                   onChange={e => onChange({ bpmExact: Number(e.target.value) })}
-                  className="flex-1 accent-orange-500 h-1.5"
+                  className="flex-1 accent-brand-500 h-1.5"
                 />
                 <input
                   type="number"
@@ -202,7 +202,7 @@ function BpmFilter({ bpmMode, bpmMin, bpmMax, bpmExact, onChange }: BpmFilterPro
                   max={300}
                   value={bpmExact}
                   onChange={e => onChange({ bpmExact: Number(e.target.value) })}
-                  className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm text-white text-center focus:outline-none focus:border-orange-500"
+                  className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm text-white text-center focus:outline-none focus:border-brand-500"
                 />
               </div>
               <p className="text-xs text-gray-500 text-center">{bpmExact} BPM</p>

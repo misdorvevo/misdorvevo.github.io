@@ -145,9 +145,9 @@ export default function EditPack() {
 
   if (loading) {
     return (
-      <main className="flex-1 py-12 px-6 bg-black">
+      <main className="flex-1 py-12 px-6">
         <div className="max-w-2xl mx-auto">
-          <Link href={`/packs/${packId}`} className="text-orange-500 hover:text-orange-400 transition-colors mb-6 inline-block">
+          <Link href={`/packs/${packId}`} className="text-brand-500 hover:text-brand-400 transition-colors mb-6 inline-block">
             ← Back to Pack
           </Link>
           <div className="text-center text-gray-400">Loading pack...</div>
@@ -158,9 +158,9 @@ export default function EditPack() {
 
   if (!pack) {
     return (
-      <main className="flex-1 py-12 px-6 bg-black">
+      <main className="flex-1 py-12 px-6">
         <div className="max-w-2xl mx-auto">
-          <Link href="/packs" className="text-orange-500 hover:text-orange-400 transition-colors mb-6 inline-block">
+          <Link href="/packs" className="text-brand-500 hover:text-brand-400 transition-colors mb-6 inline-block">
             ← Back to Packs
           </Link>
           <div className="text-center text-gray-400">Pack not found.</div>
@@ -170,9 +170,9 @@ export default function EditPack() {
   }
 
   return (
-    <main className="flex-1 py-12 px-6 bg-black">
+    <main className="flex-1 py-12 px-6">
       <div className="max-w-2xl mx-auto">
-        <Link href={`/packs/${packId}`} className="text-orange-500 hover:text-orange-400 transition-colors mb-6 inline-block">
+        <Link href={`/packs/${packId}`} className="text-brand-500 hover:text-brand-400 transition-colors mb-6 inline-block">
           ← Back to Pack
         </Link>
 
@@ -200,7 +200,7 @@ export default function EditPack() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-orange-500 focus:outline-none"
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-brand-500 focus:outline-none"
               />
               <p className="text-gray-400 text-sm mt-2">Upload a new image to replace the current one</p>
             </div>
@@ -217,7 +217,7 @@ export default function EditPack() {
                 value={formData.name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-brand-500 focus:outline-none"
                 placeholder="Enter pack name"
               />
             </div>
@@ -234,7 +234,7 @@ export default function EditPack() {
                 onChange={handleInputChange}
                 required
                 rows={4}
-                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-orange-500 focus:outline-none resize-none"
+                className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-brand-500 focus:outline-none resize-none"
                 placeholder="Enter pack description"
               />
             </div>
@@ -244,7 +244,7 @@ export default function EditPack() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-black px-6 py-3 rounded-lg font-semibold transition-colors"
               >
                 {submitting ? 'Saving...' : 'Save Changes'}
               </button>

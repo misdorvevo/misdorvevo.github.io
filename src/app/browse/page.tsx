@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-const Waveform = dynamic(() => import('@/components/Waveform'), { ssr: false });
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import Link from 'next/link';
+import SampleFxControls from '@/components/SampleFxControls';
 import SampleFilters, { DEFAULT_FILTERS, filterSamples, type Filters } from '@/components/SampleFilters';
 
 interface Sample {
@@ -92,33 +91,9 @@ export default function Browse() {
     }
   };
 
-  const handleDownload = async (sample: Sample) => {
-    const baseName = sample.fileName.replace(/\.[^/.]+$/, '');
-    const ext = sample.fileName.match(/\.[^/.]+$/)?.[0] || '';
-    const parts = [baseName];
-    if (sample.key) parts.push(sample.key);
-    if (sample.bpm) parts.push(sample.bpm);
-    const downloadName = parts.join('_') + ext;
-
-    try {
-      const response = await fetch(sample.fileUrl);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = downloadName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  };
-
   if (loading) {
     return (
-      <main className="flex-1 py-12 px-6 bg-black">
+      <main className="flex-1 py-12 px-6">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-4xl font-bold mb-8 text-white">Browse Samples</h1>
           <div className="text-center text-gray-400">Loading samples...</div>
@@ -128,7 +103,7 @@ export default function Browse() {
   }
 
   return (
-    <main className="flex-1 py-12 px-6 bg-black">
+    <main className="flex-1 py-12 px-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-white">Browse Samples</h1>
         <SampleFilters filters={filters} onChange={setFilters} />
@@ -139,11 +114,11 @@ export default function Browse() {
             {filterSamples(samples, filters).map((sample, index) => (
               <div 
                 key={`${sample.packId}-${index}`} 
-                className="bg-gray-900/50 rounded-xl border border-gray-800 hover:border-orange-500 hover:bg-gray-900 transition-all flex items-center gap-4 p-4 group"
+                className="bg-gray-900/50 rounded-xl border border-gray-800 hover:border-brand-500 hover:bg-gray-900 transition-all flex flex-wrap items-center gap-4 p-4 group"
               >
                 {/* Pack Cover Image - Small Square - Clickable */}
                 <Link href={`/packs/${sample.packId}`} className="flex-shrink-0">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-orange-500/30 transition-shadow cursor-pointer">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden hover:shadow-lg hover:shadow-brand-500/30 transition-shadow cursor-pointer">
                     {sample.packCoverImage ? (
                       <img 
                         src={sample.packCoverImage} 
@@ -151,7 +126,7 @@ export default function Browse() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-orange-600 to-orange-800 flex items-center justify-center">
+                      <div className="w-full h-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center">
                         <span className="text-xs text-white font-bold">♪</span>
                       </div>
                     )}
@@ -164,7 +139,7 @@ export default function Browse() {
                   onClick={() => handlePlaySample(`${sample.packId}-${index}`)}
                   className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                     playingId === `${sample.packId}-${index}`
-                      ? 'bg-orange-500 text-white'
+                      ? 'bg-brand-500 text-black'
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                   }`}
                   title={playingId === `${sample.packId}-${index}` ? 'Stop' : 'Play'}
@@ -176,7 +151,7 @@ export default function Browse() {
                 {/* Sample Info + Waveform (single block) */}
                 <div className="flex-1 min-w-0 flex items-center">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-white truncate group-hover:text-orange-400 transition-colors">{sample.fileName}</h3>
+                    <h3 className="font-semibold text-white truncate group-hover:text-brand-400 transition-colors">{sample.fileName}</h3>
                     <p className="text-xs text-gray-400 mb-2">
                       {sample.packName} • by {sample.uploaderName}
                     </p>
@@ -203,30 +178,23 @@ export default function Browse() {
                         </span>
                       )}
                       {sample.emotions && sample.emotions.length > 0 && (
-                        <span className="text-xs bg-orange-900 text-orange-200 px-2 py-1 rounded">
+                        <span className="text-xs bg-brand-900 text-brand-200 px-2 py-1 rounded">
                           {sample.emotions.slice(0, 2).join(', ')}
                           {sample.emotions.length > 2 ? '...' : ''}
                         </span>
                       )}
                     </div>
                   </div>
-                  {/* Waveform to the right of sample name */}
-                  <div className="ml-4 w-48 flex-shrink-0 hidden sm:block">
-                    <Waveform
-                      audioUrl={sample.fileUrl}
-                      isPlaying={playingId === `${sample.packId}-${index}`}
-                      onFinish={() => setPlayingId(null)}
-                    />
-                  </div>
                 </div>
 
-                {/* Download Button - Right Side */}
-                <button
-                  onClick={() => handleDownload(sample)}
-                  className="flex-shrink-0 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm transition-colors font-semibold whitespace-nowrap"
-                >
-                  Download
-                </button>
+                <SampleFxControls
+                  fileUrl={sample.fileUrl}
+                  fileName={sample.fileName}
+                  sampleKey={sample.key}
+                  bpm={sample.bpm}
+                  isPlaying={playingId === `${sample.packId}-${index}`}
+                  onFinish={() => setPlayingId(null)}
+                />
               </div>
             ))}
           </div>

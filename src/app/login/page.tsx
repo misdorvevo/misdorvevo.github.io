@@ -23,9 +23,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="max-w-md w-full bg-gray-900 rounded-2xl p-8 border border-gray-800">
-        <h2 className="text-4xl font-bold text-center mb-8 text-white">Login to AudioCave</h2>
+        <h2 className="text-4xl font-bold text-center mb-8 text-white">Login to Co-Drop</h2>
         {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -35,7 +35,7 @@ export default function Login() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
+              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-700"
               required
             />
           </div>
@@ -46,19 +46,19 @@ export default function Login() {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
+              className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-700"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            className="w-full bg-brand-500 hover:bg-brand-600 text-black font-semibold py-3 px-4 rounded-lg transition-colors"
           >
             Login
           </button>
         </form>
         <p className="text-center mt-6 text-gray-400">
-          Don't have an account? <Link href="/signup" className="text-orange-500 hover:text-orange-400 font-semibold">Sign up</Link>
+          Don't have an account? <Link href="/signup" className="text-brand-500 hover:text-brand-400 font-semibold">Sign up</Link>
         </p>
       </div>
     </div>

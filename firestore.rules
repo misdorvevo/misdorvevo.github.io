@@ -1,0 +1,116 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // True only when the write changes nothing but `likes`, by adding or removing exactly the caller's own uid.
+    function togglesOwnLike() {
+      let before = resource.data.likes.toSet();
+      let after = request.resource.data.likes.toSet();
+      let me = [request.auth.uid].toSet();
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
+        && ((after.difference(before) == me && before.difference(after).size() == 0)
+            || (before.difference(after) == me && after.difference(before).size() == 0));
+    }
+
+    // Public profile: anyone can read, only the owner can write.
+    match /users/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['displayName', 'bio', 'photoURL', 'photoPath', 'links', 'updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 50
+        && request.resource.data.bio is string
+        && request.resource.data.bio.size() <= 300
+        && (request.resource.data.photoURL == null || request.resource.data.photoURL is string)
+        && (request.resource.data.photoPath == null || request.resource.data.photoPath.matches('avatars/' + uid + '/.*'))
+        && request.resource.data.links is list
+        && request.resource.data.links.size() <= 6;
+      allow delete: if false;
+    }
+
+    match /samplePacks/{packId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.uploaderUid == request.auth.uid
+        && request.resource.data.likes == [];
+
+      // Owners can edit their pack. Anyone signed in can only add/remove their own uid in `likes`.
+      allow update: if request.auth != null
+        && request.resource.data.uploaderUid == resource.data.uploaderUid
+        && (resource.data.uploaderUid == request.auth.uid
+            || togglesOwnLike());
+
+      allow delete: if request.auth != null && resource.data.uploaderUid == request.auth.uid;
+
+      match /comments/{commentId} {
+        allow read: if true;
+
+        allow create: if request.auth != null
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.likes == []
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if request.auth != null
+          && togglesOwnLike();
+
+        // Authors delete their own comments; a parent's author may delete its replies (cascade delete).
+        allow delete: if request.auth != null
+          && (resource.data.authorUid == request.auth.uid
+              || (resource.data.parentId != null
+                  && get(/databases/$(database)/documents/samplePacks/$(packId)/comments/$(resource.data.parentId)).data.authorUid == request.auth.uid));
+      }
+
+      match /songs/{songId} {
+        allow read: if true;
+
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['title', 'description', 'audioUrl', 'storagePath', 'authorUid', 'authorName', 'likes', 'createdAt'])
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 100
+          && request.resource.data.description is string
+          && request.resource.data.description.size() <= 1000
+          && request.resource.data.audioUrl is string
+          && request.resource.data.storagePath.matches('songs/' + request.auth.uid + '/.*')
+          && request.resource.data.likes == []
+          && request.resource.data.createdAt == request.time;
+
+        // Songs can't be edited; signed-in users may only add/remove their own uid in `likes`.
+        allow update: if request.auth != null
+          && togglesOwnLike();
+
+        allow delete: if request.auth != null && resource.data.authorUid == request.auth.uid;
+
+        match /comments/{commentId} {
+          allow read: if true;
+
+          allow create: if request.auth != null
+            && request.resource.data.authorUid == request.auth.uid
+            && request.resource.data.text is string
+            && request.resource.data.text.size() > 0
+            && request.resource.data.text.size() <= 1000
+            && request.resource.data.likes == []
+            && request.resource.data.createdAt == request.time;
+
+          allow update: if request.auth != null
+            && togglesOwnLike();
+
+          // Comment authors, the song's owner (moderation / song deletion) and a parent comment's author can delete.
+          allow delete: if request.auth != null
+            && (resource.data.authorUid == request.auth.uid
+                || get(/databases/$(database)/documents/samplePacks/$(packId)/songs/$(songId)).data.authorUid == request.auth.uid
+                || (resource.data.parentId != null
+                    && get(/databases/$(database)/documents/samplePacks/$(packId)/songs/$(songId)/comments/$(resource.data.parentId)).data.authorUid == request.auth.uid));
+        }
+      }
+    }
+  }
+}

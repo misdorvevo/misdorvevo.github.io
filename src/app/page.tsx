@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { collection, getDocs, query, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Link from "next/link";
+import { motion, useScroll, useTransform } from "motion/react";
+import Reveal from "@/components/Reveal";
+import SpotlightCard from "@/components/SpotlightCard";
 
 interface SampleFile {
   name: string;
@@ -28,6 +31,10 @@ interface SamplePack {
 export default function Home() {
   const [featuredPacks, setFeaturedPacks] = useState<SamplePack[]>([]);
   const [loading, setLoading] = useState(true);
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -51,96 +58,170 @@ export default function Home() {
 
   return (
     <main className="flex-1">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-black via-gray-950 to-gray-900 py-32 px-6 overflow-hidden">
-        {/* Atmospheric effect */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500 rounded-full blur-3xl opacity-10"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-400 rounded-full blur-3xl opacity-10"></div>
+      {/* Hero */}
+      <section ref={heroRef} className="relative overflow-hidden px-6 pb-28 pt-24 md:pt-36">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative mx-auto max-w-5xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-auto mb-8 inline-flex items-center gap-2 rounded-full border border-brand-400/30 bg-brand-500/10 px-4 py-1.5 text-sm text-brand-200"
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-400" />
+            </span>
+            Now with speed, pitch and compression right in the player
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl font-bold leading-[1.02] sm:text-7xl md:text-8xl"
+          >
+            Drop sounds.
+            <br />
+            <span className="text-gradient">Build songs together.</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="mx-auto mt-8 max-w-2xl text-lg text-gray-300 md:text-xl"
+          >
+            Co-Drop is where producers share drum hits, loops and one-shots, reshape them on the fly,
+            and show off the songs they make with each other&apos;s samples.
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10 flex flex-col justify-center gap-4 sm:flex-row"
+          >
+            <Link
+              href="/browse"
+              className="group inline-flex items-center justify-center gap-2 rounded-full bg-brand-400 px-8 py-4 text-base font-semibold text-black shadow-xl shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-300 hover:shadow-brand-400/40"
+            >
+              Browse samples
+              <span className="transition-transform group-hover:translate-x-1">&rarr;</span>
+            </Link>
+            <Link
+              href="/upload"
+              className="inline-flex items-center justify-center rounded-full border border-gray-600 bg-gray-900/50 px-8 py-4 text-base font-semibold text-white backdrop-blur transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:text-brand-300"
+            >
+              Upload your pack
+            </Link>
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* Genre marquee */}
+      <section aria-hidden className="relative border-y border-gray-800/80 bg-black/30 py-5 backdrop-blur-sm [mask-image:linear-gradient(90deg,transparent,#000_15%,#000_85%,transparent)]">
+        <div className="flex w-max animate-marquee gap-12 whitespace-nowrap text-sm font-medium uppercase tracking-[0.25em] text-gray-500">
+          {[0, 1].map((n) => (
+            <div key={n} className="flex gap-12">
+              {["Hip-Hop", "Lo-Fi", "Trap", "House", "Drill", "Ambient", "Afrobeats", "Synthwave", "Drum & Bass", "R&B", "Experimental", "Jersey Club"].map((g) => (
+                <span key={g} className="flex items-center gap-12">{g}<span className="text-brand-500">&#9679;</span></span>
+              ))}
+            </div>
+          ))}
         </div>
-        <div className="max-w-7xl mx-auto text-center relative z-10">
-          <h1 className="text-7xl md:text-8xl font-bold mb-6 text-white drop-shadow-lg">
-            AudioCave
-          </h1>
-          <p className="text-xl md:text-2xl text-orange-200 mb-4 max-w-3xl mx-auto font-light">
-            Professional Audio Sample Library
-          </p>
-          <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-3xl mx-auto">
-            Discover, share, and download premium drum hits, loops, samples, and one-shots. 
-            Connect with producers worldwide and build your sonic palette.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/browse" className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-all hover:shadow-lg hover:shadow-orange-500/50">
-              Browse Samples
-            </a>
-            <a href="/upload" className="bg-gray-800 hover:bg-gray-700 text-orange-400 font-bold px-8 py-4 rounded-full text-lg transition-colors border-2 border-orange-500">
-              Upload Your Samples
-            </a>
+      </section>
+
+      {/* Features */}
+      <section className="px-6 py-28">
+        <div className="mx-auto max-w-7xl">
+          <Reveal className="mx-auto mb-16 max-w-2xl text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-brand-400">Why Co-Drop</p>
+            <h2 className="text-4xl font-bold md:text-5xl">Everything between a sample and a finished song</h2>
+          </Reveal>
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              { title: "Reshape every sample", text: "Change speed and pitch independently, add compression, and download with the new key and BPM already in the filename.", icon: "M4 12h3l3-8 4 16 3-8h3" },
+              { title: "Songs made with samples", text: "Every pack has its own songs page. Post what you made, see what others built, and talk about it in the comments.", icon: "M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" },
+              { title: "A real profile", text: "Add a photo, bio and links, and get a page that shows your packs, so people know whose sounds they're using.", icon: "M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21a8 8 0 0 1 16 0" },
+            ].map((f, i) => (
+              <Reveal key={f.title} delay={i * 0.1}>
+                <SpotlightCard className="h-full p-8">
+                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-brand-500/15 ring-1 ring-brand-400/30">
+                    <svg viewBox="0 0 24 24" className="h-6 w-6 text-brand-300" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={f.icon} /></svg>
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold">{f.title}</h3>
+                  <p className="leading-relaxed text-gray-400">{f.text}</p>
+                </SpotlightCard>
+              </Reveal>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Section */}
-      <section className="py-24 px-6 bg-gradient-to-b from-gray-900 to-black">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl font-bold text-white mb-4">Featured Sample Packs</h2>
-            <div className="h-1 w-24 bg-gradient-to-r from-orange-500 to-orange-300 mx-auto"></div>
-            <p className="text-gray-400 mt-4">Explore curated collections from our community</p>
-          </div>
+      {/* Featured packs */}
+      <section className="px-6 pb-28">
+        <div className="mx-auto max-w-7xl">
+          <Reveal className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
+            <div>
+              <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-brand-400">Featured</p>
+              <h2 className="text-4xl font-bold md:text-5xl">Packs the community loves</h2>
+            </div>
+            <Link href="/packs" className="group text-sm font-semibold text-brand-300 hover:text-brand-200">
+              View all packs <span className="inline-block transition-transform group-hover:translate-x-1">&rarr;</span>
+            </Link>
+          </Reveal>
           {loading ? (
             <div className="text-center text-gray-400">Loading featured packs...</div>
           ) : featuredPacks.length === 0 ? (
             <div className="text-center text-gray-400">No featured packs yet.</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {featuredPacks.map((pack) => (
-                <div key={pack.id} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-2xl p-6 border border-gray-700 hover:border-orange-500 transition-all hover:shadow-xl hover:shadow-orange-500/20 group flex flex-col">
-                  <Link href={`/packs/${pack.id}`} className="w-full h-48 rounded-xl mb-4 overflow-hidden flex items-center justify-center group-hover:shadow-lg group-hover:shadow-orange-500/40 transition-shadow relative bg-gradient-to-br from-orange-600 to-orange-800">
-                    {pack.coverImage ? (
-                      <img src={pack.coverImage} alt={pack.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-white text-lg font-bold text-center px-4 relative z-10">{pack.name}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 opacity-30 bg-gradient-to-t from-black to-transparent"></div>
-                  </Link>
-                  <h3 className="text-xl font-bold mb-2 text-white truncate">{pack.name}</h3>
-                  <p className="text-gray-400 mb-4 text-sm line-clamp-2 min-h-[2.5em]">{pack.description || "No description."}</p>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="bg-gray-800 text-orange-400 px-3 py-1 rounded-lg text-xs font-semibold">
-                      {pack.files.length} {pack.files.length === 1 ? "Sample" : "Samples"}
-                    </span>
-                    <span className="bg-gray-800 text-orange-400 px-3 py-1 rounded-lg text-xs font-semibold">
-                      {pack.likes?.length || 0} {pack.likes?.length === 1 ? "Like" : "Likes"}
-                    </span>
-                  </div>
-                  <Link href={`/packs/${pack.id}`} className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-lg transition-colors text-center">
-                    Preview & Download
-                  </Link>
-                </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {featuredPacks.map((pack, i) => (
+                <Reveal key={pack.id} delay={i * 0.1}>
+                  <SpotlightCard className="flex h-full flex-col p-5">
+                    <Link href={`/packs/${pack.id}`} className="relative mb-5 flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-brand-700 to-brand-900">
+                      {pack.coverImage ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={pack.coverImage} alt={pack.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                      ) : (
+                        <span className="relative z-10 px-4 text-center text-lg font-bold text-white">{pack.name}</span>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    </Link>
+                    <h3 className="mb-2 truncate text-xl font-semibold text-white">{pack.name}</h3>
+                    <p className="mb-4 line-clamp-2 min-h-[2.5em] text-sm text-gray-400">{pack.description || "No description."}</p>
+                    <div className="mb-5 flex items-center gap-2">
+                      <span className="rounded-full bg-brand-500/15 px-3 py-1 text-xs font-semibold text-brand-300">
+                        {pack.files.length} {pack.files.length === 1 ? "Sample" : "Samples"}
+                      </span>
+                      <span className="rounded-full bg-brand-500/15 px-3 py-1 text-xs font-semibold text-brand-300">
+                        {pack.likes?.length || 0} {pack.likes?.length === 1 ? "Like" : "Likes"}
+                      </span>
+                    </div>
+                    <Link href={`/packs/${pack.id}`} className="mt-auto rounded-full bg-brand-400 px-4 py-2.5 text-center text-sm font-semibold text-black transition-colors hover:bg-brand-300">
+                      Preview &amp; Download
+                    </Link>
+                  </SpotlightCard>
+                </Reveal>
               ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* Call to Action */}
-      <section className="relative py-24 px-6 bg-gradient-to-r from-gray-950 via-black to-gray-950 overflow-hidden">
-        {/* Atmospheric glow */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
-        </div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-5xl font-bold mb-4 text-white">Join the Community</h2>
-          <p className="text-gray-300 mb-8 text-lg">
-            Create your account today and start sharing your sounds with producers worldwide.
-          </p>
-          <a href="/signup" className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-all hover:shadow-lg hover:shadow-orange-500/50">
-            Sign Up Now
-          </a>
-        </div>
+      {/* Call to action */}
+      <section className="px-6 pb-28">
+        <Reveal>
+          <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-brand-500/30 bg-gradient-to-br from-brand-900/70 via-gray-900/80 to-gray-950/90 px-8 py-20 text-center backdrop-blur">
+            <div className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand-400/20 blur-3xl" />
+            <h2 className="relative text-4xl font-bold md:text-5xl">Ready to make some noise?</h2>
+            <p className="relative mx-auto mt-4 max-w-xl text-lg text-gray-300">
+              Create your free account and start sharing your sounds with producers worldwide.
+            </p>
+            <Link
+              href="/signup"
+              className="relative mt-8 inline-block rounded-full bg-brand-400 px-8 py-4 text-base font-semibold text-black shadow-xl shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-300"
+            >
+              Create your account
+            </Link>
+          </div>
+        </Reveal>
       </section>
     </main>
   );

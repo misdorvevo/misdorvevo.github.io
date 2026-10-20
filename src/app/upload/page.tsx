@@ -165,13 +165,13 @@ export default function Upload() {
 
   if (newPackId) {
     return (
-      <main className="flex-1 py-12 px-6 bg-black flex items-center justify-center min-h-[60vh]">
+      <main className="flex-1 py-12 px-6 flex items-center justify-center min-h-[60vh]">
         <div className="bg-gray-900 rounded-2xl p-12 border border-gray-800 max-w-xl w-full text-center shadow-xl">
-          <h1 className="text-4xl md:text-5xl font-bold text-orange-500 mb-6">Congratulations!</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-brand-500 mb-6">Congratulations!</h1>
           <p className="text-lg text-gray-200 mb-8">Your sample pack has been uploaded successfully.</p>
           <a
             href={`/packs/${newPackId}`}
-            className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-full text-lg transition-all hover:shadow-lg hover:shadow-orange-500/50"
+            className="inline-block bg-brand-500 hover:bg-brand-600 text-black font-bold px-8 py-4 rounded-full text-lg transition-all hover:shadow-lg hover:shadow-brand-500/50"
           >
             View Your Pack
           </a>
@@ -181,7 +181,7 @@ export default function Upload() {
   }
 
   return (
-    <main className="flex-1 py-12 px-6 bg-black">
+    <main className="flex-1 py-12 px-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-5xl font-bold mb-12 text-white">Upload Samples</h1>
         <form onSubmit={handleSubmit} className="bg-gray-900 rounded-2xl p-8 border border-gray-800 space-y-8">
@@ -194,7 +194,7 @@ export default function Upload() {
                 id="packName"
                 value={packName}
                 onChange={(e) => setPackName(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700"
+                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-700"
                 required
               />
             </div>
@@ -204,7 +204,7 @@ export default function Upload() {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-700 h-24 resize-none"
+                className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-700 h-24 resize-none"
               />
             </div>
             <div>
@@ -249,7 +249,7 @@ export default function Upload() {
                 required
                 aria-label="Upload audio files"
               />
-              <label htmlFor="files" className="w-full flex items-center justify-center bg-gray-800 border-2 border-gray-700 hover:border-orange-500 text-orange-400 font-semibold py-8 rounded-2xl cursor-pointer transition-colors text-lg shadow-lg">
+              <label htmlFor="files" className="w-full flex items-center justify-center bg-gray-800 border-2 border-gray-700 hover:border-brand-500 text-brand-400 font-semibold py-8 rounded-2xl cursor-pointer transition-colors text-lg shadow-lg">
                 Click or drag to upload audio files
               </label>
             </div>
@@ -262,7 +262,7 @@ export default function Upload() {
               {fileMetadata.map((metadata, index) => (
                 <div key={index} className="bg-gray-800 rounded-xl p-6 space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-orange-500">Sample {index + 1}</h3>
+                    <h3 className="text-lg font-semibold text-brand-500">Sample {index + 1}</h3>
                     <button
                       type="button"
                       onClick={() => removeFile(index)}
@@ -279,7 +279,7 @@ export default function Upload() {
                       type="text"
                       value={metadata.name}
                       onChange={(e) => updateFileMetadata(index, 'name', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600 text-sm"
+                      className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-600 text-sm"
                     />
                   </div>
 
@@ -289,7 +289,7 @@ export default function Upload() {
                     <select
                       value={metadata.genre}
                       onChange={(e) => updateFileMetadata(index, 'genre', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600 text-sm"
+                      className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-600 text-sm"
                     >
                       <option value="">Select a genre...</option>
                       {GENRE_OPTIONS.map(g => (
@@ -334,7 +334,7 @@ export default function Upload() {
                       <select
                         value={metadata.instrument}
                         onChange={e => updateFileMetadata(index, 'instrument', e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600 text-sm"
+                        className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-600 text-sm"
                       >
                         <option value="">Select an instrument...</option>
                         {INSTRUMENT_OPTIONS.map(inst => (
@@ -350,7 +350,7 @@ export default function Upload() {
                     <select
                       value={metadata.key}
                       onChange={(e) => updateFileMetadata(index, 'key', e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600 text-sm"
+                      className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-600 text-sm"
                     >
                       <option value="">Select a key...</option>
                       {KEY_OPTIONS.map(k => (
@@ -368,7 +368,7 @@ export default function Upload() {
                         value={metadata.bpm}
                         onChange={(e) => updateFileMetadata(index, 'bpm', e.target.value)}
                         placeholder="e.g. 120"
-                        className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600 text-sm"
+                        className="w-full px-3 py-2 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 border border-gray-600 text-sm"
                       />
                     </div>
                   )}
@@ -384,7 +384,7 @@ export default function Upload() {
                           onClick={() => toggleEmotion(index, emotion)}
                           className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
                             metadata.emotions.includes(emotion)
-                              ? 'bg-orange-500 text-white'
+                              ? 'bg-brand-500 text-black'
                               : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                           }`}
                         >
@@ -402,7 +402,7 @@ export default function Upload() {
           <button
             type="submit"
             disabled={uploading || fileMetadata.length === 0}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+            className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-gray-600 text-black font-semibold py-3 px-4 rounded-lg transition-colors"
           >
             {uploading ? 'Uploading...' : `Upload Pack (${fileMetadata.length} ${fileMetadata.length === 1 ? 'sample' : 'samples'})`}
           </button>
