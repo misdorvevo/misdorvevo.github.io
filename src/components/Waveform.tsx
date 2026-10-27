@@ -73,7 +73,10 @@ export default function Waveform({ audioUrl, isPlaying, onSeek, onFinish, length
 
     return () => {
       controller.abort();
-      ws.destroy();
+      // Destroying mid-load rejects with an AbortError; that's expected here.
+      try {
+        Promise.resolve(ws.destroy()).catch(() => {});
+      } catch {}
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       waveSurferRef.current = null;
       isReadyRef.current = false;
