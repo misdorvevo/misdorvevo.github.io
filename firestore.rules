@@ -5,7 +5,7 @@ service cloud.firestore {
 
     // True only when the write changes nothing but `likes`, by adding or removing exactly the caller's own uid.
     function togglesOwnLike() {
-      let before = resource.data.likes.toSet();
+      let before = resource.data.get('likes', []).toSet();
       let after = request.resource.data.likes.toSet();
       let me = [request.auth.uid].toSet();
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes'])
@@ -18,7 +18,7 @@ service cloud.firestore {
       allow read: if true;
       allow create, update: if request.auth != null
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['displayName', 'bio', 'photoURL', 'photoPath', 'links', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['displayName', 'bio', 'photoURL', 'photoPath', 'links', 'updatedAt', 'licenseAcceptedAt', 'licenseVersion'])
         && request.resource.data.displayName is string
         && request.resource.data.displayName.size() > 0
         && request.resource.data.displayName.size() <= 50
@@ -31,6 +31,94 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Direct messages: conversations/{uidA_uidB} (uids sorted) with a `messages` subcollection.
+    // Only the two participants can read or write.
+    match /conversations/{convId} {
+      function isParticipant(data) {
+        return request.auth != null && request.auth.uid in data.participants;
+      }
+
+      allow read: if isParticipant(resource.data);
+
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['participants', 'lastMessage', 'lastSenderUid', 'updatedAt', 'readAt'])
+        && request.resource.data.participants.size() == 2
+        && request.resource.data.participants[0] < request.resource.data.participants[1]
+        && convId == request.resource.data.participants[0] + '_' + request.resource.data.participants[1]
+        && request.auth.uid in request.resource.data.participants
+        && request.resource.data.lastSenderUid == request.auth.uid
+        && request.resource.data.lastMessage is string
+        && request.resource.data.lastMessage.size() <= 100
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.readAt.keys().hasOnly([request.auth.uid]);
+
+      // Participants can post a new last message (as themselves) or update only their own read marker.
+      allow update: if isParticipant(resource.data)
+        && request.resource.data.participants == resource.data.participants
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastMessage', 'lastSenderUid', 'updatedAt', 'readAt'])
+        && request.resource.data.readAt.diff(resource.data.readAt).affectedKeys().hasOnly([request.auth.uid])
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastMessage', 'lastSenderUid', 'updatedAt'])
+            || (request.resource.data.lastSenderUid == request.auth.uid
+                && request.resource.data.lastMessage is string
+                && request.resource.data.lastMessage.size() <= 100
+                && request.resource.data.updatedAt == request.time));
+
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        // Based on the id (uidA_uidB) so a listener can attach before the conversation document exists.
+        allow read: if request.auth != null && request.auth.uid in convId.split('_');
+
+        // getAfter lets the first message be created in the same batch as its conversation.
+        allow create: if isParticipant(getAfter(/databases/$(database)/documents/conversations/$(convId)).data)
+          && request.resource.data.keys().hasOnly(['senderUid', 'text', 'createdAt'])
+          && request.resource.data.senderUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.createdAt == request.time;
+
+        allow update, delete: if false;
+      }
+    }
+
+    // Weekly challenge: submissions are only accepted during the week they belong to
+    // (weeks start Monday 00:00 UTC, matching weekIndexAt() in src/lib/challenges.ts); older weeks are a read-only archive.
+    function isModerator() {
+      return request.auth != null && request.auth.uid in ['IrMD02tuYubDSXSrdFXJg7TWxwX2'];
+    }
+
+    // Per-week overrides (title, prompt, pack, winner) are moderator-only.
+    match /challenges/{weekIndex} {
+      allow read: if true;
+      allow write: if isModerator()
+        && request.resource.data.keys().hasOnly(['title', 'prompt', 'packId', 'winnerId', 'updatedAt'])
+        && request.resource.data.title.size() <= 80
+        && request.resource.data.prompt.size() <= 300;
+    }
+
+    match /challenges/{weekIndex}/submissions/{submissionId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && weekIndex == string(math.floor((request.time.toMillis() + 259200000) / 604800000))
+        && request.resource.data.keys().hasOnly(['title', 'description', 'audioUrl', 'storagePath', 'packId', 'packName', 'authorUid', 'authorName', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 1000
+        && request.resource.data.audioUrl is string
+        && request.resource.data.packId is string
+        && request.resource.data.packName is string
+        && request.resource.data.storagePath.matches('songs/' + request.auth.uid + '/.*')
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if false;
+      allow delete: if request.auth != null && (resource.data.authorUid == request.auth.uid || isModerator());
+    }
+
     match /samplePacks/{packId} {
       allow read: if true;
 
@@ -39,10 +127,11 @@ service cloud.firestore {
         && request.resource.data.likes == [];
 
       // Owners can edit their pack. Anyone signed in can only add/remove their own uid in `likes`.
+      // togglesOwnLike() only allows `likes` to change, so it needs no uploader check (and works on legacy packs without uploaderUid).
       allow update: if request.auth != null
-        && request.resource.data.uploaderUid == resource.data.uploaderUid
-        && (resource.data.uploaderUid == request.auth.uid
-            || togglesOwnLike());
+        && (togglesOwnLike()
+            || (resource.data.uploaderUid == request.auth.uid
+                && request.resource.data.uploaderUid == resource.data.uploaderUid));
 
       allow delete: if request.auth != null && resource.data.uploaderUid == request.auth.uid;
 

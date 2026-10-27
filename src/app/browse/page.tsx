@@ -44,6 +44,7 @@ export default function Browse() {
   const [loading, setLoading] = useState(true);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const fetchPacks = async () => {
@@ -91,6 +92,16 @@ export default function Browse() {
     }
   };
 
+  const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
+  const visibleSamples = filterSamples(samples, filters).filter((sample) => {
+    if (terms.length === 0) return true;
+    const haystack = [
+      sample.fileName, sample.packName, sample.uploaderName, sample.genre, sample.type, sample.key, sample.bpm,
+      ...(sample.emotions || []),
+    ].filter(Boolean).join(' ').toLowerCase();
+    return terms.every((t) => haystack.includes(t));
+  });
+
   if (loading) {
     return (
       <main className="flex-1 py-12 px-6">
@@ -106,14 +117,30 @@ export default function Browse() {
     <main className="flex-1 py-12 px-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold mb-8 text-white">Browse Samples</h1>
+        <div className="relative mb-4">
+          <svg className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="9" cy="9" r="6" />
+            <path d="M14 14l4 4" />
+          </svg>
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search samples by name, pack, creator, genre, key, mood..."
+            aria-label="Search samples"
+            className="w-full rounded-xl border border-gray-700 bg-gray-900/70 py-3 pl-12 pr-4 text-white placeholder-gray-500 outline-none transition-colors focus:border-brand-500"
+          />
+        </div>
         <SampleFilters filters={filters} onChange={setFilters} />
         {samples.length === 0 ? (
           <div className="text-center text-gray-400">No samples uploaded yet.</div>
+        ) : visibleSamples.length === 0 ? (
+          <div className="text-center text-gray-400">No samples match your search.</div>
         ) : (
           <div className="space-y-2">
-            {filterSamples(samples, filters).map((sample, index) => (
+            {visibleSamples.map((sample) => (
               <div 
-                key={`${sample.packId}-${index}`} 
+                key={`${sample.packId}-${sample.fileUrl}`} 
                 className="bg-gray-900/50 rounded-xl border border-gray-800 hover:border-brand-500 hover:bg-gray-900 transition-all flex flex-wrap items-center gap-4 p-4 group"
               >
                 {/* Pack Cover Image - Small Square - Clickable */}
@@ -136,16 +163,16 @@ export default function Browse() {
 
                 {/* Play Button */}
                 <button
-                  onClick={() => handlePlaySample(`${sample.packId}-${index}`)}
+                  onClick={() => handlePlaySample(`${sample.packId}-${sample.fileUrl}`)}
                   className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-                    playingId === `${sample.packId}-${index}`
+                    playingId === `${sample.packId}-${sample.fileUrl}`
                       ? 'bg-brand-500 text-black'
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                   }`}
-                  title={playingId === `${sample.packId}-${index}` ? 'Stop' : 'Play'}
+                  title={playingId === `${sample.packId}-${sample.fileUrl}` ? 'Stop' : 'Play'}
                   style={{ marginRight: 8 }}
                 >
-                  {playingId === `${sample.packId}-${index}` ? '⏸' : '▶'}
+                  {playingId === `${sample.packId}-${sample.fileUrl}` ? '⏸' : '▶'}
                 </button>
 
                 {/* Sample Info + Waveform (single block) */}
@@ -192,7 +219,7 @@ export default function Browse() {
                   fileName={sample.fileName}
                   sampleKey={sample.key}
                   bpm={sample.bpm}
-                  isPlaying={playingId === `${sample.packId}-${index}`}
+                  isPlaying={playingId === `${sample.packId}-${sample.fileUrl}`}
                   onFinish={() => setPlayingId(null)}
                 />
               </div>

@@ -11,12 +11,14 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Avatar from '@/components/Avatar';
 import { Profile, subscribeToProfile } from '@/lib/profile';
+import { isUnread, subscribeToConversations } from '@/lib/messages';
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [hasUnread, setHasUnread] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
@@ -35,7 +37,9 @@ export default function Header() {
   const navLinks = [
     { href: '/browse', label: 'Browse' },
     { href: '/packs', label: 'Packs' },
-    ...(user ? [{ href: '/liked-packs', label: 'Liked Packs' }] : []),
+    { href: '/journey-map', label: 'Journey Map' },
+    { href: '/challenge', label: 'Challenge' },
+    ...(user ? [{ href: '/liked-packs', label: 'Liked Packs' }, { href: '/messages', label: 'Messages' }] : []),
     { href: '/upload', label: 'Upload' },
   ];
   const displayName = profile?.displayName || user?.displayName || user?.email?.split('@')[0] || 'User';
@@ -61,6 +65,19 @@ export default function Header() {
     return () => {
       unsubscribe();
       setProfile(null);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    const unsubscribe = subscribeToConversations(
+      user.uid,
+      (list) => setHasUnread(list.some((c) => isUnread(c, user.uid))),
+      () => {}
+    );
+    return () => {
+      unsubscribe();
+      setHasUnread(false);
     };
   }, [user]);
 
@@ -114,7 +131,10 @@ export default function Header() {
                     transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                   />
                 )}
-                <span className="relative">{link.label}</span>
+                <span className="relative">
+                  {link.label}
+                  {link.href === '/messages' && hasUnread && <span className="absolute -right-2.5 -top-0.5 h-2 w-2 rounded-full bg-brand-400" aria-label="Unread messages" />}
+                </span>
               </Link>
             );
           })}
@@ -214,6 +234,7 @@ export default function Header() {
                     }`}
                   >
                     {link.label}
+                    {link.href === '/messages' && hasUnread && <span className="ml-2 inline-block h-2 w-2 rounded-full bg-brand-400" aria-label="Unread messages" />}
                   </Link>
                 </motion.div>
               ))}

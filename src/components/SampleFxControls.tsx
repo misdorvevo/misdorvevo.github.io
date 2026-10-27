@@ -57,6 +57,20 @@ export default function SampleFxControls({ fileUrl, fileName, sampleKey, bpm, is
 
       <button
         type="button"
+        onClick={() => setFx({ ...fx, reverse: !fx.reverse })}
+        aria-pressed={fx.reverse}
+        title="Reverse the sample"
+        className={`flex-shrink-0 px-3 py-2 rounded-lg text-sm font-semibold border transition-colors ${
+          fx.reverse
+            ? 'border-brand-500 text-brand-400 bg-brand-500/10'
+            : 'border-gray-700 text-gray-300 hover:border-gray-500'
+        }`}
+      >
+        ⏪ Reverse
+      </button>
+
+      <button
+        type="button"
         onClick={handleDownload}
         disabled={downloading}
         className="flex-shrink-0 bg-brand-500 hover:bg-brand-600 disabled:opacity-60 text-black px-4 py-2 rounded-lg text-sm transition-colors font-semibold whitespace-nowrap"

@@ -6,6 +6,7 @@ import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
 import Reveal from "@/components/Reveal";
+import RandomPack from "@/components/RandomPack";
 import SpotlightCard from "@/components/SpotlightCard";
 
 interface SampleFile {
@@ -204,6 +205,27 @@ export default function Home() {
           )}
         </div>
       </section>
+
+      {/* Weekly challenge */}
+      <section className="px-6 pb-20">
+        <Reveal>
+          <Link
+            href="/challenge"
+            className="group mx-auto flex max-w-5xl flex-col items-start justify-between gap-6 rounded-3xl border border-brand-500/30 bg-gray-900/70 p-8 transition-colors hover:border-brand-400 md:flex-row md:items-center md:p-10"
+          >
+            <div>
+              <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-brand-400">Weekly Challenge</p>
+              <h2 className="text-3xl font-bold text-white">New packs. New prompt. Every week.</h2>
+              <p className="mt-2 text-gray-400">Make a track with this week&apos;s featured packs and submit it before the timer runs out.</p>
+            </div>
+            <span className="shrink-0 rounded-full bg-brand-400 px-6 py-3 font-semibold text-black transition-colors group-hover:bg-brand-300">
+              Join the challenge →
+            </span>
+          </Link>
+        </Reveal>
+      </section>
+
+      <RandomPack />
 
       {/* Call to action */}
       <section className="px-6 pb-28">

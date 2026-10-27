@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Logo from '@/components/Logo';
 
 const COLUMNS = [
-  { title: 'Explore', links: [['Browse samples', '/browse'], ['Sample packs', '/packs']] },
+  { title: 'Explore', links: [['Browse samples', '/browse'], ['Sample packs', '/packs'], ['Journey map', '/journey-map']] },
   { title: 'Create', links: [['Upload a pack', '/upload'], ['My packs', '/my-packs'], ['Liked packs', '/liked-packs']] },
   { title: 'Account', links: [['Log in', '/login'], ['Sign up', '/signup'], ['Edit profile', '/account/appearance']] },
 ];

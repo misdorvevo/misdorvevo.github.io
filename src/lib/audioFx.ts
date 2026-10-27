@@ -1,7 +1,7 @@
 import { SimpleFilter, SoundTouch } from 'soundtouchjs';
 
-export const SPEED_MIN = 0.25;
-export const SPEED_MAX = 4;
+export const SPEED_MIN = 0.5;
+export const SPEED_MAX = 2;
 export const PITCH_MIN = -12;
 export const PITCH_MAX = 12;
 
@@ -34,12 +34,38 @@ export interface FxSettings {
   speed: number;
   semitones: number;
   comp: CompressorSettings;
+  reverse: boolean;
 }
 
-export const NEUTRAL_FX: FxSettings = { speed: 1, semitones: 0, comp: DEFAULT_COMP };
+export const NEUTRAL_FX: FxSettings = { speed: 1, semitones: 0, comp: DEFAULT_COMP, reverse: false };
 
 export function isNeutral(fx: FxSettings) {
-  return fx.speed === 1 && fx.semitones === 0 && !fx.comp.enabled;
+  return fx.speed === 1 && fx.semitones === 0 && !fx.comp.enabled && !fx.reverse;
+}
+
+function randomStep(range: { min: number; max: number; step: number }, lo = range.min, hi = range.max) {
+  const steps = Math.round((hi - lo) / range.step);
+  const value = lo + Math.floor(Math.random() * (steps + 1)) * range.step;
+  return Math.round(value * 100) / 100;
+}
+
+// Musical ranges rather than the full extremes: speed 0.5x-2x (log-spaced), whole-semitone pitch, compressor always on.
+export function randomFx(): FxSettings {
+  return {
+    speed: Math.round(2 ** (Math.random() * 2 - 1) * 100) / 100,
+    semitones: Math.round(Math.random() * 24) - 12,
+    comp: {
+      enabled: true,
+      threshold: randomStep(COMP_RANGES.threshold, -50, -6),
+      ratio: randomStep(COMP_RANGES.ratio, 2, 12),
+      attack: randomStep(COMP_RANGES.attack, 1, 50),
+      release: randomStep(COMP_RANGES.release, 30, 500),
+      knee: randomStep(COMP_RANGES.knee, 0, 20),
+      makeup: randomStep(COMP_RANGES.makeup, 0, 12),
+      mix: randomStep(COMP_RANGES.mix, 40, 100),
+    },
+    reverse: false,
+  };
 }
 
 export function sameComp(a: CompressorSettings, b: CompressorSettings) {
@@ -116,6 +142,7 @@ export function buildDownloadName({ fileName, key, bpm }: FxNameInput, fx: FxSet
   const baseName = fileName.replace(/\.[^/.]+$/, '');
   const originalExt = fileName.match(/\.[^/.]+$/)?.[0] || '';
   const parts = [baseName];
+  if (fx.reverse) parts.push('rev');
 
   const newKey = transposeKey(key, fx.semitones);
   if (newKey) parts.push(newKey);
@@ -139,7 +166,7 @@ const TAIL_FRAMES = 16384;
 const CHUNK_FRAMES = 8192;
 
 // Source that pads with silence so the stretcher can flush its internal buffers at the end.
-function paddedSource(buffer: AudioBuffer) {
+function paddedSource(buffer: AudioBuffer, reverse: boolean) {
   const left = buffer.getChannelData(0);
   const right = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : left;
   const total = buffer.length + TAIL_FRAMES;
@@ -148,8 +175,9 @@ function paddedSource(buffer: AudioBuffer) {
       const count = Math.max(0, Math.min(numFrames, total - position));
       for (let i = 0; i < count; i++) {
         const idx = position + i;
-        target[i * 2] = idx < left.length ? left[idx] : 0;
-        target[i * 2 + 1] = idx < right.length ? right[idx] : 0;
+        const src = reverse ? left.length - 1 - idx : idx;
+        target[i * 2] = src >= 0 && src < left.length ? left[src] : 0;
+        target[i * 2 + 1] = src >= 0 && src < right.length ? right[src] : 0;
       }
       return count;
     },
@@ -167,7 +195,7 @@ export async function processAudio(buffer: AudioBuffer, fx: FxSettings, signal?:
   const st = new SoundTouch();
   st.tempo = fx.speed;
   st.pitchSemitones = fx.semitones;
-  const filter = new SimpleFilter(paddedSource(buffer), st);
+  const filter = new SimpleFilter(paddedSource(buffer, fx.reverse), st);
 
   const expected = Math.max(1, Math.round(buffer.length / fx.speed));
   const left = new Float32Array(expected);

@@ -69,9 +69,13 @@ export default function PublicProfile() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
               <h1 className="text-3xl font-bold text-white break-words">{name}</h1>
-              {currentUid === uid && (
+              {currentUid === uid ? (
                 <Link href="/account/appearance" className="shrink-0 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm">
                   Edit profile
+                </Link>
+              ) : (
+                <Link href={currentUid ? `/messages?to=${uid}` : '/login'} className="shrink-0 bg-brand-500 hover:bg-brand-600 text-black font-semibold px-4 py-2 rounded-lg text-sm">
+                  Message
                 </Link>
               )}
             </div>

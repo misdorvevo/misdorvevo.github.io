@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { recordLicenseAcceptance } from '@/lib/profile';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -10,15 +11,22 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [acceptedLicense, setAcceptedLicense] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!acceptedLicense) {
+      setError('You must agree to the sample license to create an account.');
+      return;
+    }
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(userCredential.user, { displayName });
-      router.push('/');
+      await recordLicenseAcceptance(userCredential.user, displayName);
+      await sendEmailVerification(userCredential.user).catch(() => {});
+      router.push('/verify-email');
     } catch (error: any) {
       setError(error.message);
     }
@@ -52,7 +60,7 @@ export default function Signup() {
               required
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label htmlFor="password" className="block text-white mb-2 font-medium">Password</label>
             <input
               type="password"
@@ -63,6 +71,21 @@ export default function Signup() {
               required
             />
           </div>
+          <label className="flex items-start gap-3 mb-6 text-sm text-gray-300 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={acceptedLicense}
+              onChange={(e) => setAcceptedLicense(e.target.checked)}
+              className="mt-1 h-4 w-4 shrink-0 accent-brand-500"
+              required
+            />
+            <span>
+              I agree that any samples I upload are licensed to all Co-Drop users under a{' '}
+              <strong className="text-white">royalty-free, non-exclusive, perpetual, worldwide license</strong>, allowing them to use, modify and
+              include the samples in their own commercial and non-commercial music without payment or attribution. I keep ownership of my
+              work, and I confirm I own or control the rights to everything I upload.
+            </span>
+          </label>
           <button
             type="submit"
             className="w-full bg-brand-500 hover:bg-brand-600 text-black font-semibold py-3 px-4 rounded-lg transition-colors"

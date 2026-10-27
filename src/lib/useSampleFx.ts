@@ -15,7 +15,7 @@ interface Rendered {
   url: string;
 }
 
-const sameFx = (a: FxSettings, b: FxSettings) => a.speed === b.speed && a.semitones === b.semitones && sameComp(a.comp, b.comp);
+const sameFx = (a: FxSettings, b: FxSettings) => a.speed === b.speed && a.semitones === b.semitones && a.reverse === b.reverse && sameComp(a.comp, b.comp);
 
 export function useSampleFx(fileUrl: string) {
   const [fx, setFx] = useState<FxSettings>(NEUTRAL_FX);

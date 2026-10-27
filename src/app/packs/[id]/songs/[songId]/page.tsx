@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import Comments from '@/components/Comments';
+import ShareSong from '@/components/ShareSong';
 import { timeAgo } from '@/lib/social';
 import { deleteSong, setSongLiked, subscribeToSong, type Song } from '@/lib/songs';
 
@@ -133,6 +134,9 @@ export default function SongDetail() {
                 {deleting ? 'Deleting...' : 'Delete Song'}
               </button>
             )}
+          </div>
+          <div className="mt-4">
+            <ShareSong title={song.title} author={song.authorName} audioUrl={song.audioUrl} />
           </div>
         </div>
 

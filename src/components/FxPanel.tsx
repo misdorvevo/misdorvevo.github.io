@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import Knob from '@/components/Knob';
 import {
-  COMP_RANGES, CompressorSettings, DEFAULT_COMP, FxSettings, NEUTRAL_FX, PITCH_MAX, PITCH_MIN, SPEED_MAX, SPEED_MIN, formatSemitones, isNeutral, transposeKey,
+  COMP_RANGES, CompressorSettings, DEFAULT_COMP, FxSettings, NEUTRAL_FX, PITCH_MAX, PITCH_MIN, SPEED_MAX, SPEED_MIN, formatSemitones, isNeutral, randomFx, transposeKey,
 } from '@/lib/audioFx';
 
 interface FxPanelProps {
@@ -120,6 +120,15 @@ export default function FxPanel({ fx, onChange, processing, error, sampleKey, sa
                 ? 'Original sample. Downloads are unchanged.'
                 : 'Downloads as a 24-bit WAV with the new key and BPM in the name.'}
         </span>
+        <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => onChange({ ...randomFx(), reverse: fx.reverse })}
+          title="Randomize pitch, speed and compression"
+          className="font-semibold text-brand-400 hover:text-brand-300"
+        >
+          🎲 Random
+        </button>
         <button
           type="button"
           onClick={() => onChange(NEUTRAL_FX)}
@@ -128,6 +137,7 @@ export default function FxPanel({ fx, onChange, processing, error, sampleKey, sa
         >
           Reset
         </button>
+        </div>
       </div>
     </div>
   );

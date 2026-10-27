@@ -115,8 +115,24 @@ export async function saveProfile(user: User, profile: Profile) {
     photoPath: profile.photoPath,
     links,
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 
   // Keep the auth profile in sync so the header and new comments pick up the changes.
   await updateProfile(user, { displayName, photoURL: profile.photoURL });
+}
+
+// Bump when the wording of the sample license shown at signup changes.
+export const LICENSE_VERSION = '2026-10-27';
+
+export async function recordLicenseAcceptance(user: User, displayName: string) {
+  await setDoc(doc(db, 'users', user.uid), {
+    displayName: displayName.trim().slice(0, NAME_MAX) || user.email?.split('@')[0] || 'User',
+    bio: '',
+    photoURL: null,
+    photoPath: null,
+    links: [],
+    updatedAt: serverTimestamp(),
+    licenseAcceptedAt: serverTimestamp(),
+    licenseVersion: LICENSE_VERSION,
+  });
 }
