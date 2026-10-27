@@ -73,18 +73,20 @@ export default function PublicProfile() {
                 <Link href="/account/appearance" className="shrink-0 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm">
                   Edit profile
                 </Link>
+              ) : profile?.privacy.allowDMs === false ? (
+                <span className="shrink-0 text-gray-500 text-sm py-2">Messages off</span>
               ) : (
                 <Link href={currentUid ? `/messages?to=${uid}` : '/login'} className="shrink-0 bg-brand-500 hover:bg-brand-600 text-black font-semibold px-4 py-2 rounded-lg text-sm">
                   Message
                 </Link>
               )}
             </div>
-            {profile?.bio ? (
+            {profile?.bio && (profile.privacy.showBio || currentUid === uid) ? (
               <p className="text-gray-300 mt-3 whitespace-pre-wrap break-words">{profile.bio}</p>
             ) : (
               <p className="text-gray-500 mt-3">No bio yet.</p>
             )}
-            {profile && profile.links.length > 0 && (
+            {profile && profile.links.length > 0 && (profile.privacy.showLinks || currentUid === uid) && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {profile.links.map((l, i) => {
                   const href = safeHref(l.url);
@@ -107,7 +109,7 @@ export default function PublicProfile() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {packs.map((pack) => (
               <Link key={pack.id} href={`/packs/${pack.id}`}>
-                <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 hover:border-brand-500 transition-all overflow-hidden group cursor-pointer h-full flex flex-col">
+                <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 card-lift hover:border-brand-500 transition-all overflow-hidden group cursor-pointer h-full flex flex-col">
                   <div className="w-full h-48 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl mb-4 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-brand-500/30 transition-shadow overflow-hidden">
                     {pack.coverImage ? (
                       // eslint-disable-next-line @next/next/no-img-element

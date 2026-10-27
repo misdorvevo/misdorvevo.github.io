@@ -12,6 +12,7 @@ import {
   type Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { getProfile } from '@/lib/profile';
 
 export const MAX_MESSAGE_LENGTH = 1000;
 const MESSAGE_WINDOW = 200;
@@ -105,6 +106,9 @@ export async function sendMessage(myUid: string, otherUid: string, rawText: stri
   if (!text) throw new Error('Message is empty.');
   if (text.length > MAX_MESSAGE_LENGTH) throw new Error(`Messages are limited to ${MAX_MESSAGE_LENGTH} characters.`);
   if (myUid === otherUid) throw new Error("You can't message yourself.");
+
+  const recipient = await getProfile(otherUid).catch(() => null);
+  if (recipient && !recipient.privacy.allowDMs) throw new Error('This user has turned off direct messages.');
 
   const convId = conversationId(myUid, otherUid);
   const convRef = doc(db, 'conversations', convId);

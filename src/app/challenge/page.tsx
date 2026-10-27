@@ -113,9 +113,9 @@ function ChallengeView() {
           </p>
         )}
 
-        <div className="bg-gray-900 border border-brand-500/40 rounded-2xl p-8 mt-6">
-          <p className="text-gray-400 text-sm mb-2">This week&apos;s prompt</p>
-          <p className="text-2xl md:text-3xl font-semibold text-white">{prompt}</p>
+        <div className="hero-panel rounded-3xl p-8 md:p-12 mt-6">
+          <p className="text-brand-300 text-xs font-semibold uppercase tracking-[0.2em] mb-3">This week&apos;s prompt</p>
+          <p className="text-3xl md:text-5xl font-bold text-gradient leading-tight">{prompt}</p>
           <p className="mt-4 text-sm text-gray-400">
             {isCurrent ? (
               <>Ends in <span className="text-brand-400 font-semibold tabular-nums">{countdown}</span></>
@@ -142,7 +142,7 @@ function ChallengeView() {
         ) : !featuredPack ? (
           <p className="text-gray-500">No packs available yet.</p>
         ) : (
-          <Link href={`/packs/${featuredPack.id}`} className="flex max-w-xl gap-4 bg-gray-900 border border-gray-800 hover:border-brand-500 rounded-xl overflow-hidden transition-colors">
+          <Link href={`/packs/${featuredPack.id}`} className="card-lift flex max-w-xl gap-4 bg-gray-900 border border-gray-800 hover:border-brand-500 rounded-xl overflow-hidden">
             <div className="w-40 shrink-0 aspect-square bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
               {featuredPack.coverImage ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -205,7 +205,7 @@ function ChallengeView() {
                 <Link
                   key={w}
                   href={`/challenge?week=${w}`}
-                  className={`bg-gray-900 border rounded-xl p-4 hover:border-brand-500 transition-colors ${w === week ? 'border-brand-500' : 'border-gray-800'}`}
+                  className={`card-lift bg-gray-900 border rounded-xl p-4 hover:border-brand-500 ${w === week ? 'border-brand-500' : 'border-gray-800'}`}
                 >
                   <p className="text-sm text-brand-400">{fmt(weekStart(w))} – {fmt(new Date(weekEnd(w).getTime() - 1))}</p>
                   <p className="text-gray-300 text-sm mt-1 line-clamp-2">{promptFor(w)}</p>

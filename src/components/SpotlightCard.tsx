@@ -15,8 +15,15 @@ export default function SpotlightCard({ children, className = '' }: { children: 
         const r = el.getBoundingClientRect();
         el.style.setProperty('--mx', `${e.clientX - r.left}px`);
         el.style.setProperty('--my', `${e.clientY - r.top}px`);
+        // Subtle 3D tilt toward the cursor.
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        el.style.transform = `perspective(900px) rotateX(${(-py * 7).toFixed(2)}deg) rotateY(${(px * 7).toFixed(2)}deg) translateY(-3px)`;
       }}
-      className={`group relative overflow-hidden rounded-2xl border border-gray-700/80 bg-gray-900/70 transition-colors duration-300 hover:border-brand-500/60 ${className}`}
+      onPointerLeave={() => {
+        if (ref.current) ref.current.style.transform = '';
+      }}
+      className={`group relative overflow-hidden rounded-2xl border border-gray-700/80 bg-gray-900/70 transition-[transform,border-color,box-shadow] duration-200 ease-out hover:border-brand-500/60 hover:shadow-[0_20px_50px_-20px_rgb(63_174_114/0.45)] will-change-transform ${className}`}
     >
       <div className="spotlight pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       <div className="relative">{children}</div>

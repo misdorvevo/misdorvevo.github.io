@@ -14,6 +14,23 @@ export interface Profile {
   photoURL: string | null;
   photoPath: string | null;
   links: ProfileLink[];
+  privacy: Privacy;
+}
+
+export interface Privacy {
+  allowDMs: boolean;
+  showBio: boolean;
+  showLinks: boolean;
+}
+
+export const DEFAULT_PRIVACY: Privacy = { allowDMs: true, showBio: true, showLinks: true };
+
+export function normalizePrivacy(p: Partial<Privacy> | undefined): Privacy {
+  return {
+    allowDMs: p?.allowDMs !== false,
+    showBio: p?.showBio !== false,
+    showLinks: p?.showLinks !== false,
+  };
 }
 
 export const BIO_MAX = 300;
@@ -32,6 +49,7 @@ export function emptyProfile(user?: User | null): Profile {
     photoURL: user?.photoURL ?? null,
     photoPath: null,
     links: [],
+    privacy: { ...DEFAULT_PRIVACY },
   };
 }
 
@@ -42,6 +60,7 @@ function normalize(data: Partial<Profile> | undefined, fallbackName = ''): Profi
     photoURL: data?.photoURL ?? null,
     photoPath: data?.photoPath ?? null,
     links: Array.isArray(data?.links) ? data!.links : [],
+    privacy: normalizePrivacy(data?.privacy),
   };
 }
 
@@ -119,6 +138,13 @@ export async function saveProfile(user: User, profile: Profile) {
 
   // Keep the auth profile in sync so the header and new comments pick up the changes.
   await updateProfile(user, { displayName, photoURL: profile.photoURL });
+}
+
+export async function savePrivacy(uid: string, privacy: Privacy) {
+  await setDoc(doc(db, 'users', uid), {
+    privacy: normalizePrivacy(privacy),
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
 }
 
 // Bump when the wording of the sample license shown at signup changes.

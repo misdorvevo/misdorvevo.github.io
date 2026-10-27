@@ -101,7 +101,7 @@ export default function LikedPacks() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {packs.map((pack) => (
               <Link key={pack.id} href={`/packs/${pack.id}`}>
-                <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 hover:border-brand-500 transition-all overflow-hidden group cursor-pointer h-full flex flex-col">
+                <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800 card-lift hover:border-brand-500 transition-all overflow-hidden group cursor-pointer h-full flex flex-col">
                   <div className="w-full h-48 bg-gradient-to-br from-brand-500 to-brand-700 rounded-xl mb-4 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-brand-500/30 transition-shadow overflow-hidden">
                     {pack.coverImage ? (
                       <img 
