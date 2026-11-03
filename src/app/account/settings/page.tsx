@@ -2,45 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  EmailAuthProvider,
-  onAuthStateChanged,
-  reauthenticateWithCredential,
-  updatePassword,
-  verifyBeforeUpdateEmail,
-  type User,
-} from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { DEFAULT_PRIVACY, getProfile, savePrivacy, type Privacy } from '@/lib/profile';
 
 type Notice = { type: 'ok' | 'error'; text: string } | null;
 
-const inputClass =
-  'w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-brand-500';
 const buttonClass =
   'bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-black font-semibold px-5 py-2.5 rounded-lg text-sm';
 
 function errorMessage(err: unknown): string {
-  const code = (err as { code?: string })?.code ?? '';
-  switch (code) {
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return 'Your current password is incorrect.';
-    case 'auth/email-already-in-use':
-      return 'That email is already used by another account.';
-    case 'auth/invalid-email':
-      return 'Please enter a valid email address.';
-    case 'auth/weak-password':
-      return 'Choose a stronger password (at least 6 characters).';
-    case 'auth/too-many-requests':
-      return 'Too many attempts. Please wait a bit and try again.';
-    case 'auth/requires-recent-login':
-      return 'Please log out and back in, then try again.';
-    case 'auth/operation-not-allowed':
-      return 'Changing email this way is not enabled for this project.';
-    default:
-      return err instanceof Error ? err.message : 'Something went wrong.';
-  }
+  return err instanceof Error ? err.message : 'Something went wrong.';
 }
 
 function NoticeText({ notice }: { notice: Notice }) {
@@ -75,11 +47,6 @@ function Toggle({ label, description, checked, onChange }: { label: string; desc
   );
 }
 
-async function reauthenticate(user: User, currentPassword: string) {
-  if (!user.email) throw new Error('This account has no email address.');
-  await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
-}
-
 export default function AccountSettings() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
@@ -88,17 +55,6 @@ export default function AccountSettings() {
   const [privacyLoaded, setPrivacyLoaded] = useState(false);
   const [privacyNotice, setPrivacyNotice] = useState<Notice>(null);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
-
-  const [newEmail, setNewEmail] = useState('');
-  const [emailPassword, setEmailPassword] = useState('');
-  const [emailNotice, setEmailNotice] = useState<Notice>(null);
-  const [savingEmail, setSavingEmail] = useState(false);
-
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordNotice, setPasswordNotice] = useState<Notice>(null);
-  const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
@@ -143,84 +99,18 @@ export default function AccountSettings() {
     }
   };
 
-  const handleEmail = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const email = newEmail.trim();
-    if (email.toLowerCase() === user.email?.toLowerCase()) {
-      setEmailNotice({ type: 'error', text: 'That is already your email.' });
-      return;
-    }
-    setSavingEmail(true);
-    setEmailNotice(null);
-    try {
-      await reauthenticate(user, emailPassword);
-      await verifyBeforeUpdateEmail(user, email);
-      setEmailNotice({ type: 'ok', text: `We sent a confirmation link to ${email}. Your email changes once you click it.` });
-      setNewEmail('');
-      setEmailPassword('');
-    } catch (err) {
-      setEmailNotice({ type: 'error', text: errorMessage(err) });
-    } finally {
-      setSavingEmail(false);
-    }
-  };
-
-  const handlePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 6) {
-      setPasswordNotice({ type: 'error', text: 'New password must be at least 6 characters.' });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordNotice({ type: 'error', text: 'New passwords do not match.' });
-      return;
-    }
-    if (newPassword === currentPassword) {
-      setPasswordNotice({ type: 'error', text: 'Choose a different password than your current one.' });
-      return;
-    }
-    setSavingPassword(true);
-    setPasswordNotice(null);
-    try {
-      await reauthenticate(user, currentPassword);
-      await updatePassword(user, newPassword);
-      setPasswordNotice({ type: 'ok', text: 'Password updated.' });
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (err) {
-      setPasswordNotice({ type: 'error', text: errorMessage(err) });
-    } finally {
-      setSavingPassword(false);
-    }
-  };
-
   return (
     <main className="flex-1 py-12 px-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <h1 className="text-4xl font-bold text-white">Account Settings</h1>
 
-        <Section title="Email" description={`Signed in as ${user.email ?? 'unknown'}${user.emailVerified ? '' : ' (not verified)'}.`}>
-          <form onSubmit={handleEmail} className="space-y-4">
-            <input type="email" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="New email address" autoComplete="email" className={inputClass} />
-            <input type="password" required value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} placeholder="Current password" autoComplete="current-password" className={inputClass} />
-            <NoticeText notice={emailNotice} />
-            <button type="submit" disabled={savingEmail} className={buttonClass}>
-              {savingEmail ? 'Sending...' : 'Change email'}
-            </button>
-          </form>
-        </Section>
-
-        <Section title="Password">
-          <form onSubmit={handlePassword} className="space-y-4">
-            <input type="password" required value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" autoComplete="current-password" className={inputClass} />
-            <input type="password" required value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="New password" autoComplete="new-password" className={inputClass} />
-            <input type="password" required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" autoComplete="new-password" className={inputClass} />
-            <NoticeText notice={passwordNotice} />
-            <button type="submit" disabled={savingPassword} className={buttonClass}>
-              {savingPassword ? 'Updating...' : 'Change password'}
-            </button>
-          </form>
+        <Section
+          title="Sign-in"
+          description={`Signed in as ${user.email ?? 'unknown'} with ${
+            user.providerData.map((p) => (p.providerId === 'google.com' ? 'Google' : p.providerId === 'github.com' ? 'GitHub' : p.providerId)).join(', ') || 'a linked account'
+          }. Your password is managed by that provider; Co-Drop never stores one.`}
+        >
+          <p className="text-sm text-gray-400">To change your email or password, update it with Google or GitHub.</p>
         </Section>
 
         <Section title="Privacy" description="Control who can contact you and what appears on your public profile.">

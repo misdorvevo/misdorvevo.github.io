@@ -150,15 +150,25 @@ export async function savePrivacy(uid: string, privacy: Privacy) {
 // Bump when the wording of the sample license shown at signup changes.
 export const LICENSE_VERSION = '2026-10-27';
 
+export async function needsLicenseAcceptance(uid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'users', uid));
+  return !snap.exists() || !snap.data().licenseAcceptedAt;
+}
+
+// Never overwrites an existing profile: only the license fields are merged in.
 export async function recordLicenseAcceptance(user: User, displayName: string) {
-  await setDoc(doc(db, 'users', user.uid), {
+  const ref = doc(db, 'users', user.uid);
+  const license = { updatedAt: serverTimestamp(), licenseAcceptedAt: serverTimestamp(), licenseVersion: LICENSE_VERSION };
+  if ((await getDoc(ref)).exists()) {
+    await setDoc(ref, license, { merge: true });
+    return;
+  }
+  await setDoc(ref, {
     displayName: displayName.trim().slice(0, NAME_MAX) || user.email?.split('@')[0] || 'User',
     bio: '',
     photoURL: null,
     photoPath: null,
     links: [],
-    updatedAt: serverTimestamp(),
-    licenseAcceptedAt: serverTimestamp(),
-    licenseVersion: LICENSE_VERSION,
+    ...license,
   });
 }

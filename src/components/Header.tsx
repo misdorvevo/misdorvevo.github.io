@@ -38,7 +38,7 @@ export default function Header() {
     { href: '/browse', label: 'Browse' },
     { href: '/packs', label: 'Packs' },
     { href: '/journey-map', label: 'Journey Map' },
-    { href: '/challenge', label: 'Challenge' },
+    { href: '/challenges', label: 'Challenges' },
     ...(user ? [{ href: '/liked-packs', label: 'Liked Packs' }, { href: '/messages', label: 'Messages' }] : []),
     { href: '/upload', label: 'Upload' },
   ];

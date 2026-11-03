@@ -94,41 +94,76 @@ service cloud.firestore {
       }
     }
 
-    // Weekly challenge: submissions are only accepted during the week they belong to
-    // (weeks start Monday 00:00 UTC, matching weekIndexAt() in src/lib/challenges.ts); older weeks are a read-only archive.
-    function isModerator() {
-      return request.auth != null && request.auth.uid in ['IrMD02tuYubDSXSrdFXJg7TWxwX2'];
-    }
-
-    // Per-week overrides (title, prompt, pack, winner) are moderator-only.
-    match /challenges/{weekIndex} {
-      allow read: if true;
-      allow write: if isModerator()
-        && request.resource.data.keys().hasOnly(['title', 'prompt', 'packId', 'winnerId', 'updatedAt'])
-        && request.resource.data.title.size() <= 80
-        && request.resource.data.prompt.size() <= 300;
-    }
-
-    match /challenges/{weekIndex}/submissions/{submissionId} {
+    // Beat battles: the creator picks samples and a duration, people join the lobby, and the timer
+    // starts when the creator flips the battle to "live". Submissions are accepted until startedAt + durationMin.
+    // Keep in sync with src/lib/battles.ts.
+    match /battles/{battleId} {
       allow read: if true;
 
       allow create: if request.auth != null
-        && weekIndex == string(math.floor((request.time.toMillis() + 259200000) / 604800000))
-        && request.resource.data.keys().hasOnly(['title', 'description', 'audioUrl', 'storagePath', 'packId', 'packName', 'authorUid', 'authorName', 'createdAt'])
-        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['title', 'prompt', 'creatorUid', 'creatorName', 'samples', 'durationMin', 'status', 'startedAt', 'createdAt'])
+        && request.resource.data.creatorUid == request.auth.uid
         && request.resource.data.title is string
         && request.resource.data.title.size() > 0
-        && request.resource.data.title.size() <= 100
-        && request.resource.data.description is string
-        && request.resource.data.description.size() <= 1000
-        && request.resource.data.audioUrl is string
-        && request.resource.data.packId is string
-        && request.resource.data.packName is string
-        && request.resource.data.storagePath.matches('songs/' + request.auth.uid + '/.*')
+        && request.resource.data.title.size() <= 80
+        && request.resource.data.prompt is string
+        && request.resource.data.prompt.size() <= 300
+        && request.resource.data.samples is list
+        && request.resource.data.samples.size() > 0
+        && request.resource.data.samples.size() <= 40
+        && request.resource.data.durationMin is int
+        && request.resource.data.durationMin >= 1
+        && request.resource.data.durationMin <= 180
+        && request.resource.data.status == 'lobby'
+        && request.resource.data.startedAt == null
         && request.resource.data.createdAt == request.time;
 
-      allow update: if false;
-      allow delete: if request.auth != null && (resource.data.authorUid == request.auth.uid || isModerator());
+      allow update: if request.auth != null
+        && resource.data.creatorUid == request.auth.uid
+        && resource.data.status == 'lobby'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'startedAt'])
+        && request.resource.data.status == 'live'
+        && request.resource.data.startedAt == request.time;
+
+      allow delete: if request.auth != null && resource.data.creatorUid == request.auth.uid;
+
+      match /participants/{uid} {
+        allow read: if true;
+        allow create: if request.auth != null
+          && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['name', 'joinedAt'])
+          && request.resource.data.name is string
+          && request.resource.data.joinedAt == request.time;
+        allow update: if false;
+        allow delete: if request.auth != null
+          && (request.auth.uid == uid
+              || get(/databases/$(database)/documents/battles/$(battleId)).data.creatorUid == request.auth.uid);
+      }
+
+      match /submissions/{uid} {
+        allow read: if true;
+
+        allow create: if request.auth != null
+          && request.auth.uid == uid
+          && get(/databases/$(database)/documents/battles/$(battleId)).data.status == 'live'
+          && request.time < get(/databases/$(database)/documents/battles/$(battleId)).data.startedAt
+              + duration.value(get(/databases/$(database)/documents/battles/$(battleId)).data.durationMin, 'm')
+          && request.resource.data.keys().hasOnly(['title', 'description', 'audioUrl', 'storagePath', 'authorUid', 'authorName', 'createdAt'])
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.title is string
+          && request.resource.data.title.size() > 0
+          && request.resource.data.title.size() <= 100
+          && request.resource.data.description is string
+          && request.resource.data.description.size() <= 1000
+          && request.resource.data.audioUrl is string
+          && request.resource.data.storagePath.matches('songs/' + request.auth.uid + '/.*')
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if false;
+        allow delete: if request.auth != null
+          && (request.auth.uid == uid
+              || get(/databases/$(database)/documents/battles/$(battleId)).data.creatorUid == request.auth.uid);
+      }
     }
 
     match /samplePacks/{packId} {
