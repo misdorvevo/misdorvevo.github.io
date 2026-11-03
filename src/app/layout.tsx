@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import LicenseGate from '@/components/LicenseGate';
 import VisualizerBackground from '@/components/VisualizerBackground';
 
 const inter = Inter({
@@ -35,7 +36,7 @@ export default function RootLayout({
         <VisualizerBackground />
         <div className="relative z-10 flex min-h-screen flex-1 flex-col">
           <Header />
-          {children}
+          <LicenseGate>{children}</LicenseGate>
           <Footer />
         </div>
       </body>
